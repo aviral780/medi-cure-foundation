@@ -25,7 +25,10 @@ function AccountPage() {
     queryKey: ["profile", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
+      // The generated types file is empty by design (external Supabase project).
+      // Cast to `any` so the browser client can still query the existing
+      // `public.profiles` table without regenerating types.
+      const { data, error } = await (supabase as any)
         .from("profiles")
         .select("*")
         .eq("id", user!.id)
