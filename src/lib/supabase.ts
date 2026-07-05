@@ -1,7 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-type Database = Record<string, never>;
-
 const EXPECTED_SUPABASE_URL = 'https://gvtjlfpzxyjbcaiyonnb.supabase.co';
 const EXPECTED_SUPABASE_HOSTNAME = 'gvtjlfpzxyjbcaiyonnb.supabase.co';
 const EXPECTED_SUPABASE_PROJECT_REF = 'gvtjlfpzxyjbcaiyonnb';
@@ -67,7 +65,7 @@ function validateExternalSupabaseConfig() {
   };
 }
 
-function logSafeConnectionDiagnostic(client: SupabaseClient<Database>, hostname: string, projectRef: string) {
+function logSafeConnectionDiagnostic(client: SupabaseClient, hostname: string, projectRef: string) {
   if (!import.meta.env.DEV || typeof window === 'undefined') return;
 
   client.auth
@@ -87,7 +85,7 @@ function logSafeConnectionDiagnostic(client: SupabaseClient<Database>, hostname:
 function createExternalSupabaseClient() {
   const { supabaseUrl, publishableKey, hostname, projectRef } = validateExternalSupabaseConfig();
 
-  const client = createClient<Database>(supabaseUrl, publishableKey, {
+  const client = createClient(supabaseUrl, publishableKey, {
     global: {
       fetch: createSupabaseFetch(publishableKey),
     },
