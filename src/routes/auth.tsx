@@ -22,6 +22,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/account", replace: true });
@@ -29,24 +30,47 @@ function AuthPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const normalizedEmail = email.trim();
+    const normalizedFullName = fullName.trim();
+    const normalizedPhone = phone.trim();
+
+    if (!normalizedEmail || !password || (mode === "signup" && (!normalizedFullName || !normalizedPhone))) {
+      toast.error("Please complete all required fields.");
+      return;
+    }
+
     setSubmitting(true);
+    setConfirmationEmail(null);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: normalizedEmail,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/account`,
-            data: { full_name: fullName, phone },
+            data: {
+              full_name: normalizedFullName,
+              phone: normalizedPhone,
+            },
           },
         });
         if (error) throw error;
-        toast.success("Account created. Check your email if confirmation is required.");
+
+        if (!data.session) {
+          setConfirmationEmail(normalizedEmail);
+          toast.success("Check your email to confirm your account.");
+          return;
+        }
+
+        toast.success("Account created.");
+        router.invalidate();
+        navigate({ to: "/account", replace: true });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
         toast.success("Welcome back!");
         router.invalidate();
+        navigate({ to: "/account", replace: true });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -59,6 +83,20 @@ function AuthPage() {
     <AppShell>
       <section className="mx-auto max-w-md px-4 py-10 sm:px-6 sm:py-16">
         <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8">
+          {confirmationEmail ? (
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                Check your email
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                We sent a confirmation link to {confirmationEmail}. Confirm your account, then sign in to continue.
+              </p>
+              <Button className="mt-6 h-11 w-full rounded-xl text-base" onClick={() => setConfirmationEmail(null)}>
+                Back to sign in
+              </Button>
+            </div>
+          ) : (
+            <>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {mode === "login" ? "Welcome back" : "Create your account"}
           </h1>
@@ -100,7 +138,10 @@ function AuthPage() {
             <button
               type="button"
               className="font-medium text-primary hover:underline"
-              onClick={() => setMode(mode === "login" ? "signup" : "login")}
+              onClick={() => {
+                setMode(mode === "login" ? "signup" : "login");
+                setConfirmationEmail(null);
+              }}
             >
               {mode === "login" ? "Create account" : "Sign in"}
             </button>
@@ -108,6 +149,8 @@ function AuthPage() {
           <p className="mt-6 text-center text-xs text-muted-foreground">
             <Link to="/" className="hover:underline">← Back to home</Link>
           </p>
+            </>
+          )}
         </div>
       </section>
     </AppShell>
