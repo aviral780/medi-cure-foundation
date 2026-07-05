@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/integrations/supabase/types';
+
+type Database = Record<string, never>;
 
 const EXPECTED_SUPABASE_URL = 'https://gvtjlfpzxyjbcaiyonnb.supabase.co';
 const EXPECTED_SUPABASE_HOSTNAME = 'gvtjlfpzxyjbcaiyonnb.supabase.co';
