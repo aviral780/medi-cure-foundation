@@ -4,10 +4,9 @@ import { useMemo, useState } from "react";
 import { Search, Stethoscope, ChevronRight } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { fetchActiveDoctors, initialsOf, type Doctor } from "@/lib/booking-queries";
 
-export const Route = createFileRoute("/doctors")({
+export const Route = createFileRoute("/doctors/")({
   head: () => ({
     meta: [
       { title: "Find a doctor — MediCure" },
@@ -175,6 +174,3 @@ function ListSkeleton() {
     </ul>
   );
 }
-
-// Unused Button import kept out to avoid TS noise
-void Button;
