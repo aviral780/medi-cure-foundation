@@ -82,10 +82,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#0aa5a1" },
       { title: "MediCure — Book doctors, in-person or online" },
       { name: "description", content: "MediCure is a premium clinic consultation platform for booking in-person and online appointments with trusted doctors." },
-      { property: "og:title", content: "MediCure — Premium clinic consultations" },
-      { property: "og:description", content: "Book in-person or online consultations with trusted doctors in minutes." },
+      { property: "og:title", content: "MediCure — Book doctors, in-person or online" },
+      { property: "og:description", content: "MediCure is a premium clinic consultation platform for booking in-person and online appointments with trusted doctors." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "MediCure — Book doctors, in-person or online" },
+      { name: "twitter:description", content: "MediCure is a premium clinic consultation platform for booking in-person and online appointments with trusted doctors." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a6ae3018-4f3b-4a00-a38e-96571a87fc00/id-preview-81e4f6f4--bfe442a1-1582-4775-a300-2759ee463d5a.lovable.app-1783258072877.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a6ae3018-4f3b-4a00-a38e-96571a87fc00/id-preview-81e4f6f4--bfe442a1-1582-4775-a300-2759ee463d5a.lovable.app-1783258072877.png" },
     ],
     links: [
       {
