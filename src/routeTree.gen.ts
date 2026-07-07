@@ -12,7 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DoctorsIndexRouteImport } from './routes/doctors.index'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as DoctorsDoctorIdIndexRouteImport } from './routes/doctors.$doctorId.index'
+import { Route as AuthenticatedBookingReviewRouteImport } from './routes/_authenticated/booking.review'
+import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -28,21 +32,51 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DoctorsIndexRoute = DoctorsIndexRouteImport.update({
+  id: '/doctors/',
+  path: '/doctors/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const DoctorsDoctorIdIndexRoute = DoctorsDoctorIdIndexRouteImport.update({
+  id: '/doctors/$doctorId/',
+  path: '/doctors/$doctorId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedBookingReviewRoute =
+  AuthenticatedBookingReviewRouteImport.update({
+    id: '/booking/review',
+    path: '/booking/review',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDoctorsDoctorIdBookRoute =
+  AuthenticatedDoctorsDoctorIdBookRouteImport.update({
+    id: '/doctors/$doctorId/book',
+    path: '/doctors/$doctorId/book',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/doctors/': typeof DoctorsIndexRoute
+  '/booking/review': typeof AuthenticatedBookingReviewRoute
+  '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
+  '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/doctors': typeof DoctorsIndexRoute
+  '/booking/review': typeof AuthenticatedBookingReviewRoute
+  '/doctors/$doctorId': typeof DoctorsDoctorIdIndexRoute
+  '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -50,19 +84,48 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/doctors/': typeof DoctorsIndexRoute
+  '/_authenticated/booking/review': typeof AuthenticatedBookingReviewRoute
+  '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
+  '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/account'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/doctors/'
+    | '/booking/review'
+    | '/doctors/$doctorId/'
+    | '/doctors/$doctorId/book'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/account'
-  id: '__root__' | '/' | '/_authenticated' | '/auth' | '/_authenticated/account'
+  to:
+    | '/'
+    | '/auth'
+    | '/account'
+    | '/doctors'
+    | '/booking/review'
+    | '/doctors/$doctorId'
+    | '/doctors/$doctorId/book'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/account'
+    | '/doctors/'
+    | '/_authenticated/booking/review'
+    | '/doctors/$doctorId/'
+    | '/_authenticated/doctors/$doctorId/book'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DoctorsIndexRoute: typeof DoctorsIndexRoute
+  DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -88,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/doctors/': {
+      id: '/doctors/'
+      path: '/doctors'
+      fullPath: '/doctors/'
+      preLoaderRoute: typeof DoctorsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -95,15 +165,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/doctors/$doctorId/': {
+      id: '/doctors/$doctorId/'
+      path: '/doctors/$doctorId'
+      fullPath: '/doctors/$doctorId/'
+      preLoaderRoute: typeof DoctorsDoctorIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/booking/review': {
+      id: '/_authenticated/booking/review'
+      path: '/booking/review'
+      fullPath: '/booking/review'
+      preLoaderRoute: typeof AuthenticatedBookingReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/doctors/$doctorId/book': {
+      id: '/_authenticated/doctors/$doctorId/book'
+      path: '/doctors/$doctorId/book'
+      fullPath: '/doctors/$doctorId/book'
+      preLoaderRoute: typeof AuthenticatedDoctorsDoctorIdBookRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedBookingReviewRoute: typeof AuthenticatedBookingReviewRoute
+  AuthenticatedDoctorsDoctorIdBookRoute: typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedBookingReviewRoute: AuthenticatedBookingReviewRoute,
+  AuthenticatedDoctorsDoctorIdBookRoute: AuthenticatedDoctorsDoctorIdBookRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -113,6 +208,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DoctorsIndexRoute: DoctorsIndexRoute,
+  DoctorsDoctorIdIndexRoute: DoctorsDoctorIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

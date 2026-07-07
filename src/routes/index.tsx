@@ -36,7 +36,7 @@ function Index() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-12 rounded-xl px-6 text-base">
-                <Link to="/">Find a doctor</Link>
+                <Link to="/doctors">Find a doctor</Link>
               </Button>
               <Button
                 asChild
