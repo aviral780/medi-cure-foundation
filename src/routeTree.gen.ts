@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DoctorsIndexRouteImport } from './routes/doctors.index'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as DoctorsDoctorIdIndexRouteImport } from './routes/doctors.$doctorId.index'
+import { Route as AuthenticatedBookingReviewRouteImport } from './routes/_authenticated/booking.review'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 
 const AuthRoute = AuthRouteImport.update({
@@ -46,6 +47,12 @@ const DoctorsDoctorIdIndexRoute = DoctorsDoctorIdIndexRouteImport.update({
   path: '/doctors/$doctorId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedBookingReviewRoute =
+  AuthenticatedBookingReviewRouteImport.update({
+    id: '/booking/review',
+    path: '/booking/review',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDoctorsDoctorIdBookRoute =
   AuthenticatedDoctorsDoctorIdBookRouteImport.update({
     id: '/doctors/$doctorId/book',
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/doctors/': typeof DoctorsIndexRoute
+  '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/account': typeof AuthenticatedAccountRoute
   '/doctors': typeof DoctorsIndexRoute
+  '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/doctors/$doctorId': typeof DoctorsDoctorIdIndexRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
@@ -76,6 +85,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/doctors/': typeof DoctorsIndexRoute
+  '/_authenticated/booking/review': typeof AuthenticatedBookingReviewRoute
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/account'
     | '/doctors/'
+    | '/booking/review'
     | '/doctors/$doctorId/'
     | '/doctors/$doctorId/book'
   fileRoutesByTo: FileRoutesByTo
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/account'
     | '/doctors'
+    | '/booking/review'
     | '/doctors/$doctorId'
     | '/doctors/$doctorId/book'
   id:
@@ -103,6 +115,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/account'
     | '/doctors/'
+    | '/_authenticated/booking/review'
     | '/doctors/$doctorId/'
     | '/_authenticated/doctors/$doctorId/book'
   fileRoutesById: FileRoutesById
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorsDoctorIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/booking/review': {
+      id: '/_authenticated/booking/review'
+      path: '/booking/review'
+      fullPath: '/booking/review'
+      preLoaderRoute: typeof AuthenticatedBookingReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/doctors/$doctorId/book': {
       id: '/_authenticated/doctors/$doctorId/book'
       path: '/doctors/$doctorId/book'
@@ -171,11 +191,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedBookingReviewRoute: typeof AuthenticatedBookingReviewRoute
   AuthenticatedDoctorsDoctorIdBookRoute: typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedBookingReviewRoute: AuthenticatedBookingReviewRoute,
   AuthenticatedDoctorsDoctorIdBookRoute: AuthenticatedDoctorsDoctorIdBookRoute,
 }
 
