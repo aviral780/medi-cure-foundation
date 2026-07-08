@@ -26,8 +26,7 @@ export function AppShell({ children }: AppShellProps) {
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
             {navItems.map((item) => (
-              "to" in item ? (
-                <Link
+              <Link
                   key={item.label}
                   to={item.to}
                   className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -36,11 +35,6 @@ export function AppShell({ children }: AppShellProps) {
                 >
                   {item.label}
                 </Link>
-              ) : (
-                <span key={item.label} className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground/70">
-                  {item.label}
-                </span>
-              )
             ))}
           </nav>
         </div>
@@ -58,8 +52,7 @@ export function AppShell({ children }: AppShellProps) {
             const Icon = item.icon;
             return (
               <li key={item.label}>
-                {"to" in item ? (
-                  <Link
+                <Link
                     to={item.to}
                     className="flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-muted-foreground"
                     activeProps={{ className: "flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-xs font-semibold text-primary" }}
@@ -68,12 +61,6 @@ export function AppShell({ children }: AppShellProps) {
                     <Icon className="h-5 w-5" aria-hidden />
                     {item.label}
                   </Link>
-                ) : (
-                  <span className="flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-xs font-medium text-muted-foreground/70">
-                    <Icon className="h-5 w-5" aria-hidden />
-                    {item.label}
-                  </span>
-                )}
               </li>
             );
           })}
