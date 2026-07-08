@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { z } from "zod";
-import { ArrowLeft, Calendar, Clock, MapPin, User, Video } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2, Clock, Loader2, MapPin, User, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
 import {
   fetchConsultationTypeById,
   fetchDoctorById,
@@ -27,6 +29,8 @@ export const Route = createFileRoute("/_authenticated/booking/review")({
 function BookingReviewPage() {
   const { doctorId, consultationTypeId, slotId } = Route.useSearch();
   const navigate = useNavigate();
+  const [notes] = useState("");
+  const [confirmed, setConfirmed] = useState<string | null>(null);
 
   const [doctorQ, typeQ, slotQ] = useQueries({
     queries: [
@@ -36,16 +40,55 @@ function BookingReviewPage() {
     ],
   });
 
+  const confirmMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await (supabase as any).rpc("book_appointment", {
+        p_slot_id: slotId,
+        p_consultation_type_id: consultationTypeId,
+        p_patient_notes: notes || null,
+      });
+      if (error) throw error;
+      return data as string;
+    },
+    onSuccess: (id) => setConfirmed(id),
+  });
+
   const loading = doctorQ.isLoading || typeQ.isLoading || slotQ.isLoading;
   const anyError = doctorQ.error || typeQ.error || slotQ.error;
   const doctor = doctorQ.data;
   const type = typeQ.data;
   const slot = slotQ.data;
   const missing = !loading && (!doctor || !type || !slot);
-  const unavailable = !!slot && slot.status !== "available";
+  const unavailable = !confirmed && !!slot && slot.status !== "available";
 
   function backToPick() {
     navigate({ to: "/doctors/$doctorId/book", params: { doctorId } });
+  }
+
+  if (confirmed) {
+    return (
+      <AppShell>
+        <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+          <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-[var(--shadow-soft)]">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary-soft text-primary">
+              <CheckCircle2 className="h-7 w-7" aria-hidden />
+            </span>
+            <h1 className="mt-4 text-2xl font-semibold text-foreground">Booking confirmed</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your appointment with {doctor?.full_name} is booked. A confirmation will be available in Visits.
+            </p>
+            <div className="mt-6 grid gap-2 sm:grid-cols-2">
+              <Button variant="outline" className="h-12 rounded-xl" onClick={() => navigate({ to: "/doctors" })}>
+                Book another
+              </Button>
+              <Button className="h-12 rounded-xl" onClick={() => navigate({ to: "/visits" })}>
+                Go to Visits
+              </Button>
+            </div>
+          </div>
+        </section>
+      </AppShell>
+    );
   }
 
   return (
@@ -106,21 +149,35 @@ function BookingReviewPage() {
                 Change selection
               </Button>
               <Button
-                disabled
+                disabled={confirmMutation.isPending}
                 className="h-12 rounded-xl"
-                title="Booking confirmation will be enabled in the next stage."
+                onClick={() => confirmMutation.mutate()}
               >
-                Confirm booking
+                {confirmMutation.isPending ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Confirming…</>
+                ) : (
+                  "Confirm booking"
+                )}
               </Button>
             </div>
-            <p className="text-center text-xs text-muted-foreground">
-              Booking confirmation will be enabled in the next stage.
-            </p>
+            {confirmMutation.error && (
+              <p className="text-center text-sm text-destructive">
+                {formatBookingError(confirmMutation.error)}
+              </p>
+            )}
           </div>
         )}
       </section>
     </AppShell>
   );
+}
+
+function formatBookingError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/unavail|already|taken|booked/i.test(msg)) {
+    return "This slot is no longer available. Please choose another time.";
+  }
+  return msg || "Something went wrong. Please try again.";
 }
 
 function SummaryRow({
