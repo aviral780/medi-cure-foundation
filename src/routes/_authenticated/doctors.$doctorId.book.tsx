@@ -5,7 +5,7 @@ import { ArrowLeft, Clock, MapPin, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import {
-  fetchAvailableSlots,
+  fetchAllSlots,
   fetchConsultationTypes,
   fetchDoctorById,
   formatFee,
@@ -36,7 +36,7 @@ function BookingSelectionPage() {
   const slotsQ = useQuery({
     queryKey: ["slots", doctorId, selectedTypeId],
     enabled: !!selectedTypeId,
-    queryFn: () => fetchAvailableSlots(doctorId, selectedTypeId!),
+    queryFn: () => fetchAllSlots(doctorId, selectedTypeId!),
   });
 
   const dates = useMemo(() => {
@@ -46,7 +46,11 @@ function BookingSelectionPage() {
       arr.push(s);
       map.set(s.slot_date, arr);
     });
-    return Array.from(map.entries()).map(([date, slots]) => ({ date, slots }));
+    return Array.from(map.entries()).map(([date, slots]) => ({
+      date,
+      slots,
+      availableCount: slots.filter((s) => s.status === "available").length,
+    }));
   }, [slotsQ.data]);
 
   const timesForDate = useMemo(() => {
@@ -127,11 +131,11 @@ function BookingSelectionPage() {
             )}
             {dates.length > 0 && (
               <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-                {dates.map(({ date, slots }) => (
+                {dates.map(({ date, availableCount }) => (
                   <DateChip
                     key={date}
                     date={date}
-                    count={slots.length}
+                    count={availableCount}
                     selected={selectedDate === date}
                     onClick={() => onSelectDate(date)}
                   />
@@ -145,21 +149,32 @@ function BookingSelectionPage() {
         {selectedDate && (
           <Step number={3} title="Pick a time">
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {timesForDate.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSelectedSlotId(s.id)}
-                  className={`min-h-11 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
-                    selectedSlotId === s.id
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-foreground hover:border-primary/50"
-                  }`}
-                >
-                  {formatTime(s.start_time)}
-                </button>
-              ))}
+              {timesForDate.map((s) => {
+                const isAvailable = s.status === "available";
+                const isSelected = selectedSlotId === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    disabled={!isAvailable}
+                    aria-label={`${formatTime(s.start_time)}${isAvailable ? "" : " (booked)"}`}
+                    onClick={() => isAvailable && setSelectedSlotId(s.id)}
+                    className={`min-h-11 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
+                      !isAvailable
+                        ? "cursor-not-allowed border-dashed border-border bg-muted text-muted-foreground line-through opacity-70"
+                        : isSelected
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    {formatTime(s.start_time)}
+                  </button>
+                );
+              })}
             </div>
+            {timesForDate.length > 0 && timesForDate.every((s) => s.status !== "available") && (
+              <p className="mt-3 text-xs text-muted-foreground">All slots for this day are booked. Try another date.</p>
+            )}
           </Step>
         )}
       </section>
