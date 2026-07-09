@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, Clock, MapPin, Video } from "lucide-react";
+import { useState } from "react";
+import { Calendar, ChevronRight, Clock, MapPin, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
-import { formatMode, formatTime } from "@/lib/booking-queries";
+import { formatMode, formatTime, formatFullDate } from "@/lib/booking-queries";
+import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 
 export const Route = createFileRoute("/_authenticated/visits")({
   component: VisitsPage,
@@ -13,7 +16,8 @@ export const Route = createFileRoute("/_authenticated/visits")({
 
 type Visit = {
   id: string;
-  status: string | null;
+  appointment_status: string | null;
+  payment_status: string | null;
   patient_notes: string | null;
   created_at: string;
   doctors: { full_name: string; specialization: string } | null;
@@ -23,6 +27,7 @@ type Visit = {
 
 function VisitsPage() {
   const { user } = useAuth();
+  const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const { data, isLoading, error } = useQuery({
     queryKey: ["visits", user?.id],
     enabled: !!user?.id,
@@ -30,7 +35,7 @@ function VisitsPage() {
       const { data, error } = await (supabase as any)
         .from("appointments")
         .select(
-          "id, status, patient_notes, created_at, doctors(full_name, specialization), consultation_types(name, mode, duration_minutes), availability_slots(slot_date, start_time, end_time)",
+          "id, appointment_status, payment_status, patient_notes, created_at, doctors(full_name, specialization), consultation_types(name, mode, duration_minutes), availability_slots(slot_date, start_time, end_time)",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -66,32 +71,40 @@ function VisitsPage() {
         )}
 
         {!isLoading && !error && (data ?? []).length > 0 && (
-          <div className="mt-6 space-y-8">
-            <VisitGroup title="Upcoming" visits={upcoming} emptyText="No upcoming visits." />
-            <VisitGroup title="Past" visits={past} emptyText="No past visits yet." />
-          </div>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as "upcoming" | "past")} className="mt-6">
+            <TabsList className="grid w-full grid-cols-2 rounded-xl">
+              <TabsTrigger value="upcoming" className="rounded-lg">Upcoming ({upcoming.length})</TabsTrigger>
+              <TabsTrigger value="past" className="rounded-lg">Past ({past.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upcoming" className="mt-4">
+              <VisitList visits={upcoming} emptyText="No upcoming visits. Book your next appointment." />
+            </TabsContent>
+            <TabsContent value="past" className="mt-4">
+              <VisitList visits={past} emptyText="No past visits yet." />
+            </TabsContent>
+          </Tabs>
         )}
       </section>
     </AppShell>
   );
 }
 
-function VisitGroup({ title, visits, emptyText }: { title: string; visits: Visit[]; emptyText: string }) {
+function VisitList({ visits, emptyText }: { visits: Visit[]; emptyText: string }) {
+  if (visits.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        {emptyText}
+      </div>
+    );
+  }
   return (
-    <div>
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
-      {visits.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">{emptyText}</p>
-      ) : (
-        <ul className="mt-3 space-y-3">
-          {visits.map((v) => (
-            <li key={v.id}>
-              <VisitCard visit={v} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <ul className="space-y-3">
+      {visits.map((v) => (
+        <li key={v.id}>
+          <VisitCard visit={v} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -101,17 +114,17 @@ function VisitCard({ visit }: { visit: Visit }) {
   const slot = visit.availability_slots;
   const ModeIcon = type?.mode === "online" ? Video : MapPin;
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)]">
+    <Link
+      to="/appointments/$appointmentId"
+      params={{ appointmentId: visit.id }}
+      className="block rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)] transition-colors hover:border-primary/40"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-base font-semibold text-foreground">{doc?.full_name ?? "Doctor"}</p>
           <p className="truncate text-xs text-muted-foreground">{doc?.specialization ?? ""}</p>
         </div>
-        {visit.status && (
-          <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium capitalize text-primary">
-            {visit.status}
-          </span>
-        )}
+        <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
         {slot && (
@@ -133,7 +146,11 @@ function VisitCard({ visit }: { visit: Visit }) {
           </span>
         )}
       </div>
-    </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <StatusBadge status={visit.appointment_status} />
+        <PaymentBadge status={visit.payment_status} />
+      </div>
+    </Link>
   );
 }
 
@@ -155,10 +172,4 @@ function splitVisits(visits: Visit[]): { upcoming: Visit[]; past: Visit[] } {
 function slotTime(v: Visit): number {
   const s = v.availability_slots;
   return s ? new Date(`${s.slot_date}T${s.start_time}`).getTime() : 0;
-}
-
-function formatFullDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dt = new Date(y, (m ?? 1) - 1, d ?? 1);
-  return dt.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 }
