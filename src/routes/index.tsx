@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, ShieldCheck, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
@@ -44,7 +43,7 @@ function Index() {
                 size="lg"
                 className="h-12 rounded-xl border-border bg-background/70 px-6 text-base backdrop-blur"
               >
-                <Link to="/">How it works</Link>
+                <Link to="/how-it-works">How it works</Link>
               </Button>
             </div>
           </div>
@@ -54,20 +53,21 @@ function Index() {
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <div className="grid gap-4 sm:grid-cols-3">
           {features.map((f) => (
-            <article
+            <Link
               key={f.title}
-              className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-elevated)]"
+              to={f.to}
+              className="group block rounded-2xl border border-border bg-card p-6 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-elevated)]"
             >
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary">
                 <f.icon className="h-5 w-5" aria-hidden />
               </span>
-              <h2 className="mt-4 text-base font-semibold text-foreground">
+              <h2 className="mt-4 text-base font-semibold text-foreground group-hover:text-primary">
                 {f.title}
               </h2>
               <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                 {f.body}
               </p>
-            </article>
+            </Link>
           ))}
         </div>
       </section>
@@ -80,15 +80,18 @@ const features = [
     icon: CalendarCheck,
     title: "Real-time availability",
     body: "See open slots from real doctor calendars and book in under a minute.",
+    to: "/doctors",
   },
   {
     icon: Video,
     title: "Secure teleconsultations",
     body: "Meet your doctor over encrypted video from anywhere, on any device.",
+    to: "/doctors",
   },
   {
     icon: ShieldCheck,
     title: "Verified specialists",
     body: "Every practitioner on MediCure is credential-checked and reviewed.",
+    to: "/doctors",
   },
-];
+] as const;
