@@ -47,7 +47,7 @@ function AuthPage() {
           email: normalizedEmail,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/account`,
+            emailRedirectTo: getEmailRedirectUrl(),
             data: {
               full_name: normalizedFullName,
               phone: normalizedPhone,
