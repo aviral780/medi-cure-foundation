@@ -64,45 +64,11 @@ function ReschedulePage() {
     mutationFn: async () => {
       if (!newSlotId || !currentSlotId) throw new Error("Please pick a new time.");
       if (newSlotId === currentSlotId) throw new Error("Pick a different time slot.");
-
-      // Re-validate target slot is still available
-      const { data: target, error: tErr } = await (supabase as any)
-        .from("availability_slots")
-        .select("id, status")
-        .eq("id", newSlotId)
-        .maybeSingle();
-      if (tErr) throw tErr;
-      if (!target || target.status !== "available") {
-        throw new Error("That time slot was just taken. Please pick another.");
-      }
-
-      // Book new slot
-      const { error: bookErr } = await (supabase as any)
-        .from("availability_slots")
-        .update({ status: "booked" })
-        .eq("id", newSlotId)
-        .eq("status", "available");
-      if (bookErr) throw bookErr;
-
-      // Repoint appointment
-      const { error: updErr } = await (supabase as any)
-        .from("appointments")
-        .update({ slot_id: newSlotId, appointment_status: "confirmed" })
-        .eq("id", appointmentId);
-      if (updErr) {
-        // Best-effort revert of the new slot
-        await (supabase as any)
-          .from("availability_slots")
-          .update({ status: "available" })
-          .eq("id", newSlotId);
-        throw updErr;
-      }
-
-      // Free the old slot
-      await (supabase as any)
-        .from("availability_slots")
-        .update({ status: "available" })
-        .eq("id", currentSlotId);
+      const { error: rpcErr } = await (supabase as any).rpc("reschedule_appointment", {
+        p_appointment_id: appointmentId,
+        p_new_slot_id: newSlotId,
+      });
+      if (rpcErr) throw rpcErr;
     },
     onSuccess: async () => {
       toast.success("Appointment rescheduled");

@@ -12,6 +12,21 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const PUBLIC_APP_URL = "https://medi-cure-foundation.lovable.app";
+
+function getEmailRedirectUrl(): string {
+  // Email confirmation links must land on the public MediCure app,
+  // never on a preview/lovable.dev host.
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    const isPublicApp =
+      host === "medi-cure-foundation.lovable.app" ||
+      (!host.includes("lovable.dev") && !host.includes("lovable.app") && host !== "localhost");
+    if (isPublicApp) return `${window.location.origin}/account`;
+  }
+  return `${PUBLIC_APP_URL}/account`;
+}
+
 function AuthPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -47,7 +62,7 @@ function AuthPage() {
           email: normalizedEmail,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/account`,
+            emailRedirectTo: getEmailRedirectUrl(),
             data: {
               full_name: normalizedFullName,
               phone: normalizedPhone,

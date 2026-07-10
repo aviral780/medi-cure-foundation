@@ -45,27 +45,18 @@ function AppointmentDetailsPage() {
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      const notesUpdate = reason.trim()
-        ? { patient_notes: `${data?.patient_notes ? `${data.patient_notes}\n\n` : ""}Cancellation reason: ${reason.trim()}` }
-        : {};
-      const { error: apptErr } = await (supabase as any)
-        .from("appointments")
-        .update({ appointment_status: "cancelled", ...notesUpdate })
-        .eq("id", appointmentId);
-      if (apptErr) throw apptErr;
-      if (data?.slot_id) {
-        // Best-effort: release the slot so it can be re-booked.
-        await (supabase as any)
-          .from("availability_slots")
-          .update({ status: "available" })
-          .eq("id", data.slot_id);
-      }
+      const { error: rpcErr } = await (supabase as any).rpc("cancel_appointment", {
+        p_appointment_id: appointmentId,
+        p_cancellation_reason: reason.trim() || null,
+      });
+      if (rpcErr) throw rpcErr;
     },
     onSuccess: async () => {
       toast.success("Appointment cancelled");
       setConfirmOpen(false);
       await queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] });
       await queryClient.invalidateQueries({ queryKey: ["visits"] });
+      await queryClient.invalidateQueries({ queryKey: ["slots"] });
       navigate({ to: "/visits" });
     },
     onError: (err: Error) => {
