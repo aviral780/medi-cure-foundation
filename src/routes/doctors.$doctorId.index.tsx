@@ -41,6 +41,19 @@ function DoctorDetailsPage() {
     navigate({ to: "/doctors/$doctorId/book", params: { doctorId } });
   }
 
+  function onPickConsultation(consultationTypeId: string) {
+    if (authLoading) return;
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+    navigate({
+      to: "/doctors/$doctorId/book",
+      params: { doctorId },
+      search: { consultationTypeId },
+    });
+  }
+
   return (
     <AppShell>
       <section className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
@@ -97,7 +110,9 @@ function DoctorDetailsPage() {
               )}
 
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {(typesQ.data ?? []).map((t) => <ConsultationCard key={t.id} type={t} />)}
+                {(typesQ.data ?? []).map((t) => (
+                  <ConsultationCard key={t.id} type={t} onSelect={() => onPickConsultation(t.id)} />
+                ))}
               </ul>
             </div>
 
@@ -117,19 +132,25 @@ function DoctorDetailsPage() {
   );
 }
 
-function ConsultationCard({ type }: { type: ConsultationType }) {
+function ConsultationCard({ type, onSelect }: { type: ConsultationType; onSelect: () => void }) {
   const Icon = type.mode === "online" ? Video : MapPin;
   return (
-    <li className="rounded-2xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-primary">
-        <Icon className="h-4 w-4" aria-hidden />
-        <span className="text-xs font-semibold uppercase tracking-wide">{formatMode(type.mode)}</span>
-      </div>
-      <p className="mt-2 text-base font-semibold text-foreground">{type.name}</p>
-      <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Clock className="h-3.5 w-3.5" aria-hidden /> {type.duration_minutes} min
-      </p>
-      <p className="mt-3 text-lg font-semibold text-foreground">{formatFee(type.fee, type.currency)}</p>
+    <li>
+      <button
+        type="button"
+        onClick={onSelect}
+        className="w-full rounded-2xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:shadow-[var(--shadow-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      >
+        <div className="flex items-center gap-2 text-primary">
+          <Icon className="h-4 w-4" aria-hidden />
+          <span className="text-xs font-semibold uppercase tracking-wide">{formatMode(type.mode)}</span>
+        </div>
+        <p className="mt-2 text-base font-semibold text-foreground">{type.name}</p>
+        <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Clock className="h-3.5 w-3.5" aria-hidden /> {type.duration_minutes} min
+        </p>
+        <p className="mt-3 text-lg font-semibold text-foreground">{formatFee(type.fee, type.currency)}</p>
+      </button>
     </li>
   );
 }

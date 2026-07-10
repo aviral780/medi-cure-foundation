@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import { ArrowLeft, Clock, MapPin, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,18 @@ import {
   type ConsultationType,
 } from "@/lib/booking-queries";
 
+const searchSchema = z.object({
+  consultationTypeId: z.string().min(1).optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/doctors/$doctorId/book")({
+  validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw),
   component: BookingSelectionPage,
 });
 
 function BookingSelectionPage() {
   const { doctorId } = Route.useParams();
+  const { consultationTypeId: preselectId } = Route.useSearch();
   const navigate = useNavigate();
 
   const doctorQ = useQuery({ queryKey: ["doctor", doctorId], queryFn: () => fetchDoctorById(doctorId) });
@@ -29,9 +36,20 @@ function BookingSelectionPage() {
     queryFn: () => fetchConsultationTypes(doctorId),
   });
 
-  const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
+  const [selectedTypeId, setSelectedTypeId] = useState<string | null>(preselectId ?? null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+
+  // Ensure the preselected type actually exists for this doctor.
+  useEffect(() => {
+    if (!preselectId || !typesQ.data) return;
+    const exists = typesQ.data.some((t) => t.id === preselectId);
+    if (exists && selectedTypeId !== preselectId) {
+      setSelectedTypeId(preselectId);
+    } else if (!exists && selectedTypeId === preselectId) {
+      setSelectedTypeId(null);
+    }
+  }, [preselectId, typesQ.data]);
 
   const slotsQ = useQuery({
     queryKey: ["slots", doctorId, selectedTypeId],

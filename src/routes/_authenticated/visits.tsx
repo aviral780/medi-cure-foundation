@@ -20,6 +20,9 @@ type Visit = {
   payment_status: string | null;
   patient_notes: string | null;
   created_at: string;
+  appointment_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
   doctors: { full_name: string; specialization: string } | null;
   consultation_types: { name: string; mode: string; duration_minutes: number } | null;
   availability_slots: { slot_date: string; start_time: string; end_time: string } | null;
@@ -35,7 +38,7 @@ function VisitsPage() {
       const { data, error } = await (supabase as any)
         .from("appointments")
         .select(
-          "id, appointment_status, payment_status, patient_notes, created_at, doctors(full_name, specialization), consultation_types(name, mode, duration_minutes), availability_slots(slot_date, start_time, end_time)",
+          "id, appointment_status, payment_status, patient_notes, created_at, appointment_date, start_time, end_time, doctors(full_name, specialization), consultation_types(name, mode, duration_minutes), availability_slots(slot_date, start_time, end_time)",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -159,17 +162,41 @@ function splitVisits(visits: Visit[]): { upcoming: Visit[]; past: Visit[] } {
   const upcoming: Visit[] = [];
   const past: Visit[] = [];
   for (const v of visits) {
-    const slot = v.availability_slots;
-    const ts = slot ? new Date(`${slot.slot_date}T${slot.end_time}`).getTime() : 0;
-    if (ts >= now) upcoming.push(v);
+    const status = (v.appointment_status ?? "").toLowerCase();
+    const isCancelled = status === "cancelled" || status === "canceled";
+    const endTs = visitEndTime(v);
+    if (!isCancelled && endTs >= now) upcoming.push(v);
     else past.push(v);
   }
-  upcoming.sort((a, b) => slotTime(a) - slotTime(b));
-  past.sort((a, b) => slotTime(b) - slotTime(a));
+  upcoming.sort((a, b) => visitStartTime(a) - visitStartTime(b));
+  past.sort((a, b) => visitStartTime(b) - visitStartTime(a));
   return { upcoming, past };
 }
 
-function slotTime(v: Visit): number {
-  const s = v.availability_slots;
-  return s ? new Date(`${s.slot_date}T${s.start_time}`).getTime() : 0;
+function localDateTime(dateStr: string, timeStr: string): number {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const [hh, mm, ss] = timeStr.split(":").map(Number);
+  const dt = new Date(
+    y ?? 1970,
+    (m ?? 1) - 1,
+    d ?? 1,
+    hh ?? 0,
+    mm ?? 0,
+    ss ?? 0,
+  );
+  return dt.getTime();
+}
+
+function visitStartTime(v: Visit): number {
+  const date = v.appointment_date ?? v.availability_slots?.slot_date;
+  const time = v.start_time ?? v.availability_slots?.start_time;
+  if (!date || !time) return 0;
+  return localDateTime(date, time);
+}
+
+function visitEndTime(v: Visit): number {
+  const date = v.appointment_date ?? v.availability_slots?.slot_date;
+  const time = v.end_time ?? v.availability_slots?.end_time;
+  if (!date || !time) return 0;
+  return localDateTime(date, time);
 }
