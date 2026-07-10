@@ -30,7 +30,7 @@ function ReschedulePage() {
 
   const doctorId = apptQ.data?.doctor_id;
   const consultationTypeId = apptQ.data?.consultation_type_id;
-  const currentSlotId = apptQ.data?.slot_id;
+  const currentSlotId = apptQ.data?.availability_slot_id;
 
   const slotsQ = useQuery({
     queryKey: ["slots", doctorId, consultationTypeId],

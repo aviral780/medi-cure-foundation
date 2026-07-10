@@ -124,7 +124,7 @@ export type AppointmentDetail = {
   created_at: string;
   doctor_id: string;
   consultation_type_id: string;
-  slot_id: string;
+  availability_slot_id: string;
   doctors: {
     id: string;
     full_name: string;
@@ -154,7 +154,7 @@ export async function fetchAppointmentById(id: string): Promise<AppointmentDetai
   const { data, error } = await db
     .from("appointments")
     .select(
-      "id, appointment_status, payment_status, patient_notes, created_at, doctor_id, consultation_type_id, slot_id, doctors(id, full_name, specialization, profile_image_url, qualifications, experience_years), consultation_types(id, name, mode, duration_minutes, fee, currency), availability_slots(id, slot_date, start_time, end_time, status)",
+      "id, appointment_status, payment_status, patient_notes, created_at, doctor_id, consultation_type_id, availability_slot_id, doctors(id, full_name, specialization, profile_image_url, qualifications, experience_years), consultation_types(id, name, mode, duration_minutes, fee, currency), availability_slots(id, slot_date, start_time, end_time, status)",
     )
     .eq("id", id)
     .maybeSingle();
