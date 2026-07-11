@@ -11,7 +11,6 @@ import {
   fetchDoctorById,
   formatFee,
   formatMode,
-  formatTime,
   isSlotExpired,
   isSlotStartInPast,
   type AvailabilitySlot,
