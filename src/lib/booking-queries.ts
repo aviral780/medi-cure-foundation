@@ -208,3 +208,25 @@ export function initialsOf(name: string): string {
     .map((s) => s[0]?.toUpperCase() ?? "")
     .join("");
 }
+
+function localDateTime(dateStr: string, timeStr: string): number {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const [hh, mm, ss] = timeStr.split(":").map(Number);
+  const dt = new Date(
+    y ?? 1970,
+    (m ?? 1) - 1,
+    d ?? 1,
+    hh ?? 0,
+    mm ?? 0,
+    ss ?? 0,
+  );
+  return dt.getTime();
+}
+
+export function isSlotExpired(slot: { slot_date: string; end_time: string }): boolean {
+  return localDateTime(slot.slot_date, slot.end_time) < Date.now();
+}
+
+export function isSlotStartInPast(slot: { slot_date: string; start_time: string }): boolean {
+  return localDateTime(slot.slot_date, slot.start_time) < Date.now();
+}
