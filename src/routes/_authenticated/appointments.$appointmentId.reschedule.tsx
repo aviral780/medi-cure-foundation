@@ -11,11 +11,8 @@ import {
   fetchAppointmentById,
   formatFullDate,
   formatTime,
-  isSlotExpired,
-  isSlotStartInPast,
   type AvailabilitySlot,
 } from "@/lib/booking-queries";
-import { SlotButton } from "@/components/booking/SlotButton";
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId/reschedule")({
   component: ReschedulePage,
@@ -46,9 +43,7 @@ function ReschedulePage() {
 
   const dates = useMemo(() => {
     const map = new Map<string, AvailabilitySlot[]>();
-    (slotsQ.data ?? [])
-      .filter((s) => !isSlotExpired(s) || s.id === currentSlotId)
-      .forEach((s) => {
+    (slotsQ.data ?? []).forEach((s) => {
       const arr = map.get(s.slot_date) ?? [];
       arr.push(s);
       map.set(s.slot_date, arr);
@@ -56,9 +51,7 @@ function ReschedulePage() {
     return Array.from(map.entries()).map(([date, slots]) => ({
       date,
       slots,
-      availableCount: slots.filter(
-        (s) => (s.status === "available" && !isSlotStartInPast(s)) || s.id === currentSlotId,
-      ).length,
+      availableCount: slots.filter((s) => s.status === "available" || s.id === currentSlotId).length,
     }));
   }, [slotsQ.data, currentSlotId]);
 
@@ -84,15 +77,7 @@ function ReschedulePage() {
       await queryClient.invalidateQueries({ queryKey: ["slots", doctorId, consultationTypeId] });
       navigate({ to: "/appointments/$appointmentId", params: { appointmentId } });
     },
-    onError: async (err: Error) => {
-      const msg = err.message || "";
-      const friendly = /unavail|already|taken|booked/i.test(msg)
-        ? "That slot was just taken. Please pick another time."
-        : msg || "Couldn't reschedule";
-      toast.error(friendly);
-      await queryClient.invalidateQueries({ queryKey: ["slots", doctorId, consultationTypeId] });
-      setNewSlotId(null);
-    },
+    onError: (err: Error) => toast.error(err.message || "Couldn't reschedule"),
   });
 
   const currentSlot = apptQ.data?.availability_slots;
@@ -154,22 +139,27 @@ function ReschedulePage() {
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {timesForDate.map((s) => {
                     const isCurrent = s.id === currentSlotId;
-                    const expired = isSlotStartInPast(s);
-                    const state = isCurrent
-                      ? "current"
-                      : expired
-                      ? "expired"
-                      : s.status === "available"
-                      ? "available"
-                      : "booked";
+                    const isAvailable = s.status === "available" && !isCurrent;
+                    const isSelected = newSlotId === s.id;
                     return (
-                      <SlotButton
+                      <button
                         key={s.id}
-                        startTime={s.start_time}
-                        state={state}
-                        selected={newSlotId === s.id}
-                        onSelect={() => setNewSlotId(s.id)}
-                      />
+                        type="button"
+                        disabled={!isAvailable}
+                        onClick={() => isAvailable && setNewSlotId(s.id)}
+                        className={`min-h-11 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
+                          isCurrent
+                            ? "cursor-not-allowed border-primary/40 bg-primary-soft text-primary"
+                            : !isAvailable
+                            ? "cursor-not-allowed border-dashed border-border bg-muted text-muted-foreground line-through opacity-70"
+                            : isSelected
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-card text-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        {formatTime(s.start_time)}
+                        {isCurrent && <span className="ml-1 text-[10px]">(now)</span>}
+                      </button>
                     );
                   })}
                 </div>
