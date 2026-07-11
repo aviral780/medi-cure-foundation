@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Calendar, ChevronRight, Clock, MapPin, Video } from "lucide-react";
+import { Calendar, CalendarClock, ChevronRight, Clock, MapPin, Video, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { formatMode, formatTime, formatFullDate } from "@/lib/booking-queries";
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
+import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
 
 export const Route = createFileRoute("/_authenticated/visits")({
   component: VisitsPage,
@@ -31,6 +32,7 @@ type Visit = {
 function VisitsPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
+  const [cancelId, setCancelId] = useState<string | null>(null);
   const { data, isLoading, error } = useQuery({
     queryKey: ["visits", user?.id],
     enabled: !!user?.id,
@@ -80,7 +82,12 @@ function VisitsPage() {
               <TabsTrigger value="past" className="rounded-lg">Past ({past.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="upcoming" className="mt-4">
-              <VisitList visits={upcoming} emptyText="No upcoming visits. Book your next appointment." />
+              <VisitList
+                visits={upcoming}
+                emptyText="No upcoming visits. Book your next appointment."
+                showActions
+                onCancel={(id) => setCancelId(id)}
+              />
             </TabsContent>
             <TabsContent value="past" className="mt-4">
               <VisitList visits={past} emptyText="No past visits yet." />
@@ -88,11 +95,28 @@ function VisitsPage() {
           </Tabs>
         )}
       </section>
+      {cancelId && (
+        <CancelAppointmentDialog
+          appointmentId={cancelId}
+          open={!!cancelId}
+          onOpenChange={(v) => !v && setCancelId(null)}
+        />
+      )}
     </AppShell>
   );
 }
 
-function VisitList({ visits, emptyText }: { visits: Visit[]; emptyText: string }) {
+function VisitList({
+  visits,
+  emptyText,
+  showActions,
+  onCancel,
+}: {
+  visits: Visit[];
+  emptyText: string;
+  showActions?: boolean;
+  onCancel?: (id: string) => void;
+}) {
   if (visits.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
@@ -104,56 +128,89 @@ function VisitList({ visits, emptyText }: { visits: Visit[]; emptyText: string }
     <ul className="space-y-3">
       {visits.map((v) => (
         <li key={v.id}>
-          <VisitCard visit={v} />
+          <VisitCard visit={v} showActions={showActions} onCancel={onCancel} />
         </li>
       ))}
     </ul>
   );
 }
 
-function VisitCard({ visit }: { visit: Visit }) {
+function VisitCard({
+  visit,
+  showActions,
+  onCancel,
+}: {
+  visit: Visit;
+  showActions?: boolean;
+  onCancel?: (id: string) => void;
+}) {
   const doc = visit.doctors;
   const type = visit.consultation_types;
   const slot = visit.availability_slots;
   const ModeIcon = type?.mode === "online" ? Video : MapPin;
+  const date = visit.appointment_date ?? slot?.slot_date ?? null;
+  const startTime = visit.start_time ?? slot?.start_time ?? null;
+  const endTime = visit.end_time ?? slot?.end_time ?? null;
   return (
-    <Link
-      to="/appointments/$appointmentId"
-      params={{ appointmentId: visit.id }}
-      className="block rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)] transition-colors hover:border-primary/40"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-base font-semibold text-foreground">{doc?.full_name ?? "Doctor"}</p>
-          <p className="truncate text-xs text-muted-foreground">{doc?.specialization ?? ""}</p>
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)] transition-colors hover:border-primary/40">
+      <Link
+        to="/appointments/$appointmentId"
+        params={{ appointmentId: visit.id }}
+        className="block"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-base font-semibold text-foreground">{doc?.full_name ?? "Doctor"}</p>
+            <p className="truncate text-xs text-muted-foreground">{doc?.specialization ?? ""}</p>
+          </div>
+          <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
         </div>
-        <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
-        {slot && (
-          <>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+          {date && (
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="h-4 w-4" aria-hidden />
-              {formatFullDate(slot.slot_date)}
+              {formatFullDate(date)}
             </span>
+          )}
+          {startTime && endTime && (
             <span className="inline-flex items-center gap-1.5">
               <Clock className="h-4 w-4" aria-hidden />
-              {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+              {formatTime(startTime)} – {formatTime(endTime)}
             </span>
-          </>
-        )}
-        {type && (
-          <span className="inline-flex items-center gap-1.5">
-            <ModeIcon className="h-4 w-4" aria-hidden />
-            {type.name} · {formatMode(type.mode)}
-          </span>
-        )}
-      </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <StatusBadge status={visit.appointment_status} />
-        <PaymentBadge status={visit.payment_status} />
-      </div>
-    </Link>
+          )}
+          {type && (
+            <span className="inline-flex items-center gap-1.5">
+              <ModeIcon className="h-4 w-4" aria-hidden />
+              {type.name} · {formatMode(type.mode)}
+            </span>
+          )}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <StatusBadge status={visit.appointment_status} />
+          <PaymentBadge status={visit.payment_status} />
+        </div>
+      </Link>
+      {showActions && (
+        <div className="mt-4 grid grid-cols-2 gap-2 border-t border-border/60 pt-3">
+          <Button asChild variant="outline" size="sm" className="h-10 rounded-lg">
+            <Link
+              to="/appointments/$appointmentId/reschedule"
+              params={{ appointmentId: visit.id }}
+            >
+              <CalendarClock className="mr-1.5 h-4 w-4" aria-hidden /> Reschedule
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-10 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => onCancel?.(visit.id)}
+          >
+            <X className="mr-1.5 h-4 w-4" aria-hidden /> Cancel
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
 

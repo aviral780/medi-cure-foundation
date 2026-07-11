@@ -11,10 +11,12 @@ import {
   fetchDoctorById,
   formatFee,
   formatMode,
-  formatTime,
+  isSlotExpired,
+  isSlotStartInPast,
   type AvailabilitySlot,
   type ConsultationType,
 } from "@/lib/booking-queries";
+import { SlotButton } from "@/components/booking/SlotButton";
 
 const searchSchema = z.object({
   consultationTypeId: z.string().min(1).optional(),
@@ -59,7 +61,9 @@ function BookingSelectionPage() {
 
   const dates = useMemo(() => {
     const map = new Map<string, AvailabilitySlot[]>();
-    (slotsQ.data ?? []).forEach((s) => {
+    (slotsQ.data ?? [])
+      .filter((s) => !isSlotExpired(s))
+      .forEach((s) => {
       const arr = map.get(s.slot_date) ?? [];
       arr.push(s);
       map.set(s.slot_date, arr);
@@ -67,7 +71,7 @@ function BookingSelectionPage() {
     return Array.from(map.entries()).map(([date, slots]) => ({
       date,
       slots,
-      availableCount: slots.filter((s) => s.status === "available").length,
+      availableCount: slots.filter((s) => s.status === "available" && !isSlotStartInPast(s)).length,
     }));
   }, [slotsQ.data]);
 
@@ -168,25 +172,20 @@ function BookingSelectionPage() {
           <Step number={3} title="Pick a time">
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {timesForDate.map((s) => {
-                const isAvailable = s.status === "available";
-                const isSelected = selectedSlotId === s.id;
+                const expired = isSlotStartInPast(s);
+                const state = expired
+                  ? "expired"
+                  : s.status === "available"
+                  ? "available"
+                  : "booked";
                 return (
-                  <button
+                  <SlotButton
                     key={s.id}
-                    type="button"
-                    disabled={!isAvailable}
-                    aria-label={`${formatTime(s.start_time)}${isAvailable ? "" : " (booked)"}`}
-                    onClick={() => isAvailable && setSelectedSlotId(s.id)}
-                    className={`min-h-11 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors ${
-                      !isAvailable
-                        ? "cursor-not-allowed border-dashed border-border bg-muted text-muted-foreground line-through opacity-70"
-                        : isSelected
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card text-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    {formatTime(s.start_time)}
-                  </button>
+                    startTime={s.start_time}
+                    state={state}
+                    selected={selectedSlotId === s.id}
+                    onSelect={() => setSelectedSlotId(s.id)}
+                  />
                 );
               })}
             </div>

@@ -13,6 +13,7 @@ import {
   formatFee,
   formatMode,
   formatTime,
+  isSlotExpired,
 } from "@/lib/booking-queries";
 
 const searchSchema = z.object({
@@ -60,6 +61,7 @@ function BookingReviewPage() {
   const slot = slotQ.data;
   const missing = !loading && (!doctor || !type || !slot);
   const unavailable = !confirmed && !!slot && slot.status !== "available";
+  const expired = !confirmed && !!slot && isSlotExpired(slot);
 
   function backToPick() {
     navigate({ to: "/doctors/$doctorId/book", params: { doctorId } });
@@ -125,7 +127,13 @@ function BookingReviewPage() {
           </StateCard>
         )}
 
-        {!loading && !anyError && !missing && !unavailable && doctor && type && slot && (
+        {!loading && !anyError && !missing && !unavailable && expired && (
+          <StateCard tone="warn" title="Slot has expired" action={<Button onClick={backToPick}>Choose another time</Button>}>
+            The time slot you selected is no longer bookable. Please pick a future time.
+          </StateCard>
+        )}
+
+        {!loading && !anyError && !missing && !unavailable && !expired && doctor && type && slot && (
           <div className="mt-6 space-y-4">
             <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <SummaryRow icon={User} label="Doctor" value={doctor.full_name} sub={doctor.specialization} />
