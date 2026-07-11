@@ -1,22 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast } from "sonner";
 import { ArrowLeft, Calendar, CalendarClock, Clock, MapPin, StickyNote, Video, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { supabase } from "@/lib/supabase";
 import {
   fetchAppointmentById,
   formatFee,
@@ -26,6 +13,7 @@ import {
   initialsOf,
 } from "@/lib/booking-queries";
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
+import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailsPage,
@@ -33,35 +21,11 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
 
 function AppointmentDetailsPage() {
   const { appointmentId } = Route.useParams();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [reason, setReason] = useState("");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["appointment", appointmentId],
     queryFn: () => fetchAppointmentById(appointmentId),
-  });
-
-  const cancelMutation = useMutation({
-    mutationFn: async () => {
-      const { error: rpcErr } = await (supabase as any).rpc("cancel_appointment", {
-        p_appointment_id: appointmentId,
-        p_cancellation_reason: reason.trim() || null,
-      });
-      if (rpcErr) throw rpcErr;
-    },
-    onSuccess: async () => {
-      toast.success("Appointment cancelled");
-      setConfirmOpen(false);
-      await queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] });
-      await queryClient.invalidateQueries({ queryKey: ["visits"] });
-      await queryClient.invalidateQueries({ queryKey: ["slots"] });
-      navigate({ to: "/visits" });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || "Couldn't cancel appointment");
-    },
   });
 
   const slot = data?.availability_slots;
@@ -208,41 +172,11 @@ function AppointmentDetailsPage() {
         )}
       </section>
 
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cancel this appointment?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will free up the time slot for other patients. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-2">
-            <label htmlFor="cancel-reason" className="text-sm font-medium text-foreground">
-              Reason (optional)
-            </label>
-            <Textarea
-              id="cancel-reason"
-              rows={3}
-              placeholder="Let the clinic know why…"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancelMutation.isPending}>Keep it</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={cancelMutation.isPending}
-              onClick={(e) => {
-                e.preventDefault();
-                cancelMutation.mutate();
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {cancelMutation.isPending ? "Cancelling…" : "Yes, cancel"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <CancelAppointmentDialog
+        appointmentId={appointmentId}
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+      />
     </AppShell>
   );
 }
