@@ -16,7 +16,6 @@ import {
   type AvailabilitySlot,
 } from "@/lib/booking-queries";
 import { SlotButton } from "@/components/booking/SlotButton";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId/reschedule")({
   component: ReschedulePage,
