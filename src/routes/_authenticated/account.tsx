@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
+import { Receipt } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/account")({
   component: AccountPage,
@@ -77,6 +79,14 @@ function AccountPage() {
               Could not load profile: {error instanceof Error ? error.message : "Unknown error"}
             </p>
           )}
+
+          <div className="mt-8 border-t border-border pt-6">
+            <Button asChild variant="outline" className="h-12 w-full justify-start rounded-xl">
+              <Link to="/payments">
+                <Receipt className="mr-2 h-4 w-4" /> Payment history
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
     </AppShell>

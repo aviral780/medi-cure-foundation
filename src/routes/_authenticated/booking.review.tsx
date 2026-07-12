@@ -51,7 +51,13 @@ function BookingReviewPage() {
       if (error) throw error;
       return data as string;
     },
-    onSuccess: (id) => setConfirmed(id),
+    onSuccess: (id) => {
+      setConfirmed(id);
+      const fee = Number(typeQ.data?.fee ?? 0);
+      if (fee > 0) {
+        navigate({ to: "/payment/$appointmentId", params: { appointmentId: id } });
+      }
+    },
   });
 
   const loading = doctorQ.isLoading || typeQ.isLoading || slotQ.isLoading;

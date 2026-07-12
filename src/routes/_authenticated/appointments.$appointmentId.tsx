@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import { useState, type ComponentType } from "react";
-import { ArrowLeft, Calendar, CalendarClock, Clock, MapPin, StickyNote, Video, X } from "lucide-react";
+import { ArrowLeft, Calendar, CalendarClock, Clock, CreditCard, MapPin, Receipt, StickyNote, Video, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +13,9 @@ import {
   initialsOf,
   localDateTimeMs,
 } from "@/lib/booking-queries";
-import { StatusBadge } from "@/components/appointments/StatusBadges";
+import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
+import { fetchLatestPaymentForAppointment } from "@/lib/payments-api";
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailsPage,
@@ -24,10 +25,16 @@ function AppointmentDetailsPage() {
   const { appointmentId } = Route.useParams();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["appointment", appointmentId],
-    queryFn: () => fetchAppointmentById(appointmentId),
+  const [apptQ, payQ] = useQueries({
+    queries: [
+      { queryKey: ["appointment", appointmentId], queryFn: () => fetchAppointmentById(appointmentId) },
+      { queryKey: ["payment-for-appointment", appointmentId], queryFn: () => fetchLatestPaymentForAppointment(appointmentId) },
+    ],
   });
+  const data = apptQ.data;
+  const isLoading = apptQ.isLoading;
+  const error = apptQ.error;
+  const payment = payQ.data;
 
   const slot = data?.availability_slots;
   const scheduleDate = data?.appointment_date ?? slot?.slot_date ?? null;
@@ -36,6 +43,8 @@ function AppointmentDetailsPage() {
   const isPast = scheduleDate && scheduleEndTime ? localDateTimeMs(scheduleDate, scheduleEndTime) < Date.now() : false;
   const status = (data?.appointment_status ?? "").toLowerCase();
   const isCancelled = status === "cancelled" || status === "canceled";
+  const paymentPending = (data?.payment_status ?? "").toLowerCase() === "pending" && !isCancelled && !isPast;
+  const isPaid = (data?.payment_status ?? "").toLowerCase() === "paid";
   const canModify = !!data && !isPast && !isCancelled;
 
   return (
@@ -75,6 +84,7 @@ function AppointmentDetailsPage() {
               {canModify && (
                 <div className="flex flex-col items-end gap-1.5">
                   <StatusBadge status={data.appointment_status} />
+                  <PaymentBadge status={data.payment_status} />
                 </div>
               )}
             </div>
@@ -144,6 +154,37 @@ function AppointmentDetailsPage() {
                   <StickyNote className="h-4 w-4" aria-hidden /> Notes
                 </div>
                 <p className="mt-2 whitespace-pre-line text-sm text-foreground">{data.patient_notes}</p>
+              </div>
+            )}
+
+            {paymentPending && (
+              <div className="mt-4 rounded-2xl border border-amber-400/40 bg-amber-50 p-5 dark:bg-amber-950/30">
+                <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Payment pending</p>
+                <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80">
+                  Complete payment to confirm this appointment.
+                </p>
+                <Button asChild className="mt-3 h-11 rounded-xl">
+                  <Link to="/payment/$appointmentId" params={{ appointmentId }}>
+                    <CreditCard className="mr-2 h-4 w-4" /> Complete payment
+                  </Link>
+                </Button>
+              </div>
+            )}
+
+            {isPaid && payment?.razorpay_payment_id && (
+              <div className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)]">
+                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  <CreditCard className="h-4 w-4" aria-hidden /> Payment
+                </div>
+                <dl className="mt-3 space-y-1.5 text-sm">
+                  <div className="flex justify-between"><dt className="text-muted-foreground">Method</dt><dd className="font-medium">{payment.payment_method?.toUpperCase() ?? "—"}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-muted-foreground">Payment ID</dt><dd className="font-mono text-xs break-all">{payment.razorpay_payment_id}</dd></div>
+                </dl>
+                <Button asChild variant="outline" size="sm" className="mt-3 h-10 rounded-lg">
+                  <Link to="/receipts/$appointmentId" params={{ appointmentId }}>
+                    <Receipt className="mr-1.5 h-4 w-4" /> View receipt
+                  </Link>
+                </Button>
               </div>
             )}
 
