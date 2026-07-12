@@ -8,7 +8,7 @@ interface AppShellProps {
 
 const navItems = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/doctors", label: "Doctors", icon: Stethoscope },
+  { to: "/doctors", label: "Doctor", icon: Stethoscope },
   { to: "/visits", label: "Visits", icon: Calendar },
   { to: "/account", label: "Account", icon: User },
 ] as const;
