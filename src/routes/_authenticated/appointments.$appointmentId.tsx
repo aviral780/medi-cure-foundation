@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { ArrowLeft, Calendar, CalendarClock, Clock, MapPin, StickyNote, Video, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
@@ -186,7 +186,7 @@ function AppointmentDetailsPage() {
   );
 }
 
-function DetailRow({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
+function DetailRow({ icon: Icon, label }: { icon: ComponentType<{ className?: string }>; label: string }) {
   return (
     <div className="flex items-center gap-2.5 text-foreground">
       <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />

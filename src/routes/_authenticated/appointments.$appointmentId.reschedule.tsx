@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -57,10 +57,10 @@ function ReschedulePage() {
     (slotsQ.data ?? [])
       .filter((s) => !isSlotExpired(s))
       .forEach((s) => {
-      const arr = map.get(s.slot_date) ?? [];
-      arr.push(s);
-      map.set(s.slot_date, arr);
-    });
+        const arr = map.get(s.slot_date) ?? [];
+        arr.push(s);
+        map.set(s.slot_date, arr);
+      });
     return Array.from(map.entries()).map(([date, slots]) => ({
       date,
       slots,
@@ -239,7 +239,7 @@ function ReschedulePage() {
   );
 }
 
-function StateBox({ title, children }: { title: string; children: React.ReactNode }) {
+function StateBox({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mt-6 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-[var(--shadow-soft)]">
       <p className="text-base font-semibold text-foreground">{title}</p>
