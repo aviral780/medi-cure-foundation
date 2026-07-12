@@ -15,10 +15,16 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DoctorsIndexRouteImport } from './routes/doctors.index'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
+import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as DoctorsDoctorIdIndexRouteImport } from './routes/doctors.$doctorId.index'
+import { Route as AuthenticatedReceiptsAppointmentIdRouteImport } from './routes/_authenticated/receipts.$appointmentId'
+import { Route as AuthenticatedPaymentAppointmentIdRouteImport } from './routes/_authenticated/payment.$appointmentId'
 import { Route as AuthenticatedBookingReviewRouteImport } from './routes/_authenticated/booking.review'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments.$appointmentId'
+import { Route as ApiPublicPaymentsVerifyRouteImport } from './routes/api/public/payments.verify'
+import { Route as ApiPublicPaymentsMarkFailedRouteImport } from './routes/api/public/payments.mark-failed'
+import { Route as ApiPublicPaymentsCreateOrderRouteImport } from './routes/api/public/payments.create-order'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 import { Route as AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport } from './routes/_authenticated/appointments.$appointmentId.reschedule'
 
@@ -51,6 +57,11 @@ const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
   path: '/visits',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -61,6 +72,18 @@ const DoctorsDoctorIdIndexRoute = DoctorsDoctorIdIndexRouteImport.update({
   path: '/doctors/$doctorId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedReceiptsAppointmentIdRoute =
+  AuthenticatedReceiptsAppointmentIdRouteImport.update({
+    id: '/receipts/$appointmentId',
+    path: '/receipts/$appointmentId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPaymentAppointmentIdRoute =
+  AuthenticatedPaymentAppointmentIdRouteImport.update({
+    id: '/payment/$appointmentId',
+    path: '/payment/$appointmentId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBookingReviewRoute =
   AuthenticatedBookingReviewRouteImport.update({
     id: '/booking/review',
@@ -72,6 +95,23 @@ const AuthenticatedAppointmentsAppointmentIdRoute =
     id: '/appointments/$appointmentId',
     path: '/appointments/$appointmentId',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicPaymentsVerifyRoute = ApiPublicPaymentsVerifyRouteImport.update({
+  id: '/api/public/payments/verify',
+  path: '/api/public/payments/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPaymentsMarkFailedRoute =
+  ApiPublicPaymentsMarkFailedRouteImport.update({
+    id: '/api/public/payments/mark-failed',
+    path: '/api/public/payments/mark-failed',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicPaymentsCreateOrderRoute =
+  ApiPublicPaymentsCreateOrderRouteImport.update({
+    id: '/api/public/payments/create-order',
+    path: '/api/public/payments/create-order',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedDoctorsDoctorIdBookRoute =
   AuthenticatedDoctorsDoctorIdBookRouteImport.update({
@@ -91,26 +131,38 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/how-it-works': typeof HowItWorksRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
   '/doctors/': typeof DoctorsIndexRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   '/booking/review': typeof AuthenticatedBookingReviewRoute
+  '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
+  '/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
+  '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
+  '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
+  '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/how-it-works': typeof HowItWorksRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
   '/doctors': typeof DoctorsIndexRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   '/booking/review': typeof AuthenticatedBookingReviewRoute
+  '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
+  '/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
   '/doctors/$doctorId': typeof DoctorsDoctorIdIndexRoute
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
+  '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
+  '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
+  '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -119,13 +171,19 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/how-it-works': typeof HowItWorksRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRoute
   '/doctors/': typeof DoctorsIndexRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   '/_authenticated/booking/review': typeof AuthenticatedBookingReviewRoute
+  '/_authenticated/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
+  '/_authenticated/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/_authenticated/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
+  '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
+  '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
+  '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -134,26 +192,38 @@ export interface FileRouteTypes {
     | '/auth'
     | '/how-it-works'
     | '/account'
+    | '/payments'
     | '/visits'
     | '/doctors/'
     | '/appointments/$appointmentId'
     | '/booking/review'
+    | '/payment/$appointmentId'
+    | '/receipts/$appointmentId'
     | '/doctors/$doctorId/'
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
+    | '/api/public/payments/create-order'
+    | '/api/public/payments/mark-failed'
+    | '/api/public/payments/verify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/how-it-works'
     | '/account'
+    | '/payments'
     | '/visits'
     | '/doctors'
     | '/appointments/$appointmentId'
     | '/booking/review'
+    | '/payment/$appointmentId'
+    | '/receipts/$appointmentId'
     | '/doctors/$doctorId'
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
+    | '/api/public/payments/create-order'
+    | '/api/public/payments/mark-failed'
+    | '/api/public/payments/verify'
   id:
     | '__root__'
     | '/'
@@ -161,13 +231,19 @@ export interface FileRouteTypes {
     | '/auth'
     | '/how-it-works'
     | '/_authenticated/account'
+    | '/_authenticated/payments'
     | '/_authenticated/visits'
     | '/doctors/'
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/booking/review'
+    | '/_authenticated/payment/$appointmentId'
+    | '/_authenticated/receipts/$appointmentId'
     | '/doctors/$doctorId/'
     | '/_authenticated/appointments/$appointmentId/reschedule'
     | '/_authenticated/doctors/$doctorId/book'
+    | '/api/public/payments/create-order'
+    | '/api/public/payments/mark-failed'
+    | '/api/public/payments/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -177,6 +253,9 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   DoctorsIndexRoute: typeof DoctorsIndexRoute
   DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
+  ApiPublicPaymentsCreateOrderRoute: typeof ApiPublicPaymentsCreateOrderRoute
+  ApiPublicPaymentsMarkFailedRoute: typeof ApiPublicPaymentsMarkFailedRoute
+  ApiPublicPaymentsVerifyRoute: typeof ApiPublicPaymentsVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -223,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVisitsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/payments': {
+      id: '/_authenticated/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -237,6 +323,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorsDoctorIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/receipts/$appointmentId': {
+      id: '/_authenticated/receipts/$appointmentId'
+      path: '/receipts/$appointmentId'
+      fullPath: '/receipts/$appointmentId'
+      preLoaderRoute: typeof AuthenticatedReceiptsAppointmentIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payment/$appointmentId': {
+      id: '/_authenticated/payment/$appointmentId'
+      path: '/payment/$appointmentId'
+      fullPath: '/payment/$appointmentId'
+      preLoaderRoute: typeof AuthenticatedPaymentAppointmentIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/booking/review': {
       id: '/_authenticated/booking/review'
       path: '/booking/review'
@@ -250,6 +350,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/appointments/$appointmentId'
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/payments/verify': {
+      id: '/api/public/payments/verify'
+      path: '/api/public/payments/verify'
+      fullPath: '/api/public/payments/verify'
+      preLoaderRoute: typeof ApiPublicPaymentsVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/mark-failed': {
+      id: '/api/public/payments/mark-failed'
+      path: '/api/public/payments/mark-failed'
+      fullPath: '/api/public/payments/mark-failed'
+      preLoaderRoute: typeof ApiPublicPaymentsMarkFailedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/create-order': {
+      id: '/api/public/payments/create-order'
+      path: '/api/public/payments/create-order'
+      fullPath: '/api/public/payments/create-order'
+      preLoaderRoute: typeof ApiPublicPaymentsCreateOrderRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/doctors/$doctorId/book': {
       id: '/_authenticated/doctors/$doctorId/book'
@@ -285,18 +406,26 @@ const AuthenticatedAppointmentsAppointmentIdRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRoute
   AuthenticatedAppointmentsAppointmentIdRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   AuthenticatedBookingReviewRoute: typeof AuthenticatedBookingReviewRoute
+  AuthenticatedPaymentAppointmentIdRoute: typeof AuthenticatedPaymentAppointmentIdRoute
+  AuthenticatedReceiptsAppointmentIdRoute: typeof AuthenticatedReceiptsAppointmentIdRoute
   AuthenticatedDoctorsDoctorIdBookRoute: typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRoute,
   AuthenticatedAppointmentsAppointmentIdRoute:
     AuthenticatedAppointmentsAppointmentIdRouteWithChildren,
   AuthenticatedBookingReviewRoute: AuthenticatedBookingReviewRoute,
+  AuthenticatedPaymentAppointmentIdRoute:
+    AuthenticatedPaymentAppointmentIdRoute,
+  AuthenticatedReceiptsAppointmentIdRoute:
+    AuthenticatedReceiptsAppointmentIdRoute,
   AuthenticatedDoctorsDoctorIdBookRoute: AuthenticatedDoctorsDoctorIdBookRoute,
 }
 
@@ -310,6 +439,9 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   DoctorsIndexRoute: DoctorsIndexRoute,
   DoctorsDoctorIdIndexRoute: DoctorsDoctorIdIndexRoute,
+  ApiPublicPaymentsCreateOrderRoute: ApiPublicPaymentsCreateOrderRoute,
+  ApiPublicPaymentsMarkFailedRoute: ApiPublicPaymentsMarkFailedRoute,
+  ApiPublicPaymentsVerifyRoute: ApiPublicPaymentsVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
