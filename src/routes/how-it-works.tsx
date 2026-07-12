@@ -25,8 +25,8 @@ export const Route = createFileRoute("/how-it-works")({
 const steps = [
   {
     icon: Search,
-    title: "Find a doctor",
-    body: "Search verified specialists by name or specialization and open a profile to learn more.",
+    title: "Open the doctor's profile",
+    body: "Review our clinic doctor's background, qualifications, and available consultation options.",
   },
   {
     icon: Stethoscope,
