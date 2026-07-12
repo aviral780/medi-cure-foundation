@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -13,6 +13,7 @@ import {
   formatTime,
   isSlotExpired,
   isSlotStartInPast,
+  localDateTimeMs,
   type AvailabilitySlot,
 } from "@/lib/booking-queries";
 import { SlotButton } from "@/components/booking/SlotButton";
@@ -34,10 +35,17 @@ function ReschedulePage() {
   const doctorId = apptQ.data?.doctor_id;
   const consultationTypeId = apptQ.data?.consultation_type_id;
   const currentSlotId = apptQ.data?.availability_slot_id;
+  const currentSlot = apptQ.data?.availability_slots;
+  const currentDate = apptQ.data?.appointment_date ?? currentSlot?.slot_date ?? null;
+  const currentEndTime = apptQ.data?.end_time ?? currentSlot?.end_time ?? null;
+  const appointmentStatus = (apptQ.data?.appointment_status ?? "").toLowerCase();
+  const isCancelled = appointmentStatus === "cancelled" || appointmentStatus === "canceled";
+  const isPastAppointment = currentDate && currentEndTime ? localDateTimeMs(currentDate, currentEndTime) < Date.now() : false;
+  const canReschedule = !!apptQ.data && !isCancelled && !isPastAppointment;
 
   const slotsQ = useQuery({
     queryKey: ["slots", doctorId, consultationTypeId],
-    enabled: !!doctorId && !!consultationTypeId,
+    enabled: !!doctorId && !!consultationTypeId && canReschedule,
     queryFn: () => fetchAllSlots(doctorId!, consultationTypeId!),
   });
 
@@ -47,7 +55,7 @@ function ReschedulePage() {
   const dates = useMemo(() => {
     const map = new Map<string, AvailabilitySlot[]>();
     (slotsQ.data ?? [])
-      .filter((s) => !isSlotExpired(s) || s.id === currentSlotId)
+      .filter((s) => !isSlotExpired(s))
       .forEach((s) => {
       const arr = map.get(s.slot_date) ?? [];
       arr.push(s);
@@ -61,6 +69,12 @@ function ReschedulePage() {
       ).length,
     }));
   }, [slotsQ.data, currentSlotId]);
+
+  useEffect(() => {
+    if (selectedDate || dates.length === 0) return;
+    const currentDateWithSlots = currentSlot?.slot_date && dates.some((d) => d.date === currentSlot.slot_date);
+    setSelectedDate(currentDateWithSlots ? currentSlot.slot_date : dates[0]!.date);
+  }, [currentSlot?.slot_date, dates, selectedDate]);
 
   const timesForDate = useMemo(() => {
     if (!selectedDate) return [];
@@ -95,8 +109,6 @@ function ReschedulePage() {
     },
   });
 
-  const currentSlot = apptQ.data?.availability_slots;
-
   return (
     <AppShell>
       <section className="mx-auto max-w-2xl px-4 py-6 pb-40 sm:px-6 sm:py-10">
@@ -122,7 +134,31 @@ function ReschedulePage() {
           <div className="mt-6 h-40 animate-pulse rounded-2xl bg-muted" />
         )}
 
-        {slotsQ.data && dates.length > 0 && (
+        {apptQ.error && (
+          <StateBox title="Couldn't load appointment">
+            We couldn't open this appointment for rescheduling. Please go back to Visits and try again.
+          </StateBox>
+        )}
+
+        {!apptQ.isLoading && !apptQ.error && !apptQ.data && (
+          <StateBox title="Appointment not found">
+            This appointment could not be found.
+          </StateBox>
+        )}
+
+        {apptQ.data && !canReschedule && (
+          <StateBox title="Rescheduling unavailable">
+            {isCancelled ? "Cancelled appointments can't be rescheduled." : "Past appointments can't be rescheduled."}
+          </StateBox>
+        )}
+
+        {slotsQ.error && (
+          <StateBox title="Couldn't load availability">
+            We couldn't load future time slots. Please try again shortly.
+          </StateBox>
+        )}
+
+        {canReschedule && slotsQ.data && dates.length > 0 && (
           <>
             <div className="mt-6">
               <div className="mb-3 flex items-center gap-2">
@@ -178,7 +214,7 @@ function ReschedulePage() {
           </>
         )}
 
-        {slotsQ.data && dates.length === 0 && (
+        {canReschedule && slotsQ.data && dates.length === 0 && (
           <div className="mt-6 rounded-2xl border border-dashed border-border bg-card p-6 text-center text-sm text-muted-foreground">
             No other availability right now. Try again later or cancel this appointment.
           </div>
@@ -192,7 +228,7 @@ function ReschedulePage() {
         <div className="mx-auto max-w-2xl">
           <Button
             className="h-12 w-full rounded-xl text-base"
-            disabled={!newSlotId || rescheduleMutation.isPending}
+            disabled={!canReschedule || !newSlotId || rescheduleMutation.isPending}
             onClick={() => rescheduleMutation.mutate()}
           >
             {rescheduleMutation.isPending ? "Rescheduling…" : "Confirm new time"}
@@ -200,6 +236,15 @@ function ReschedulePage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function StateBox({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-6 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-[var(--shadow-soft)]">
+      <p className="text-base font-semibold text-foreground">{title}</p>
+      <p className="mt-1">{children}</p>
+    </div>
   );
 }
 
