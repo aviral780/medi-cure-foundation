@@ -1,6 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Clock, MapPin, Video } from "lucide-react";
+import { Clock, MapPin, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -57,13 +57,6 @@ function DoctorDetailsPage() {
   return (
     <AppShell>
       <section className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
-        <Link
-          to="/doctors"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden /> All doctors
-        </Link>
-
         {doctorQ.isLoading && <div className="mt-6 h-40 animate-pulse rounded-2xl bg-muted" />}
         {doctorQ.error && (
           <ErrorBox>We couldn't load this doctor's profile.</ErrorBox>
@@ -74,7 +67,7 @@ function DoctorDetailsPage() {
 
         {doctorQ.data && (
           <>
-            <div className="mt-5 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8">
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)] sm:p-8">
               <div className="flex items-start gap-4 sm:gap-6">
                 <Avatar name={doctorQ.data.full_name} url={doctorQ.data.profile_image_url} size={80} />
                 <div className="min-w-0 flex-1">
