@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { ArrowLeft, Calendar, CalendarClock, Clock, MapPin, StickyNote, Video, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,9 @@ import {
   formatMode,
   formatTime,
   initialsOf,
+  localDateTimeMs,
 } from "@/lib/booking-queries";
-import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
+import { StatusBadge } from "@/components/appointments/StatusBadges";
 import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
@@ -29,7 +30,10 @@ function AppointmentDetailsPage() {
   });
 
   const slot = data?.availability_slots;
-  const isPast = slot ? new Date(`${slot.slot_date}T${slot.end_time}`).getTime() < Date.now() : false;
+  const scheduleDate = data?.appointment_date ?? slot?.slot_date ?? null;
+  const scheduleStartTime = data?.start_time ?? slot?.start_time ?? null;
+  const scheduleEndTime = data?.end_time ?? slot?.end_time ?? null;
+  const isPast = scheduleDate && scheduleEndTime ? localDateTimeMs(scheduleDate, scheduleEndTime) < Date.now() : false;
   const status = (data?.appointment_status ?? "").toLowerCase();
   const isCancelled = status === "cancelled" || status === "canceled";
   const canModify = !!data && !isPast && !isCancelled;
@@ -68,10 +72,11 @@ function AppointmentDetailsPage() {
                   Booked {new Date(data.created_at).toLocaleDateString()}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <StatusBadge status={data.appointment_status} />
-                <PaymentBadge status={data.payment_status} />
-              </div>
+              {canModify && (
+                <div className="flex flex-col items-end gap-1.5">
+                  <StatusBadge status={data.appointment_status} />
+                </div>
+              )}
             </div>
 
             {/* Doctor card */}
@@ -108,12 +113,12 @@ function AppointmentDetailsPage() {
                 Schedule
               </h2>
               <dl className="mt-3 space-y-2.5 text-sm">
-                {slot && (
+                {scheduleDate && scheduleStartTime && scheduleEndTime && (
                   <>
-                    <DetailRow icon={Calendar} label={formatFullDate(slot.slot_date)} />
+                    <DetailRow icon={Calendar} label={formatFullDate(scheduleDate)} />
                     <DetailRow
                       icon={Clock}
-                      label={`${formatTime(slot.start_time)} – ${formatTime(slot.end_time)}`}
+                      label={`${formatTime(scheduleStartTime)} – ${formatTime(scheduleEndTime)}`}
                     />
                   </>
                 )}
@@ -181,7 +186,7 @@ function AppointmentDetailsPage() {
   );
 }
 
-function DetailRow({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
+function DetailRow({ icon: Icon, label }: { icon: ComponentType<{ className?: string }>; label: string }) {
   return (
     <div className="flex items-center gap-2.5 text-foreground">
       <Icon className="h-4 w-4 text-muted-foreground" aria-hidden />

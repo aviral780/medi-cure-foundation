@@ -3,13 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Calendar, CalendarClock, ChevronRight, Clock, MapPin, Video, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { formatMode, formatTime, formatFullDate } from "@/lib/booking-queries";
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/visits")({
   component: VisitsPage,
@@ -192,15 +193,13 @@ function VisitCard({
       </Link>
       {showActions && (
         <div className="mt-4 grid grid-cols-2 gap-2 border-t border-border/60 pt-3">
-          <Button asChild variant="outline" size="sm" className="h-10 rounded-lg">
-            <Link
-              to="/appointments/$appointmentId/reschedule"
-              params={{ appointmentId: visit.id }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <CalendarClock className="mr-1.5 h-4 w-4" aria-hidden /> Reschedule
-            </Link>
-          </Button>
+          <Link
+            to="/appointments/$appointmentId/reschedule"
+            params={{ appointmentId: visit.id }}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-10 rounded-lg")}
+          >
+            <CalendarClock className="mr-1.5 h-4 w-4" aria-hidden /> Reschedule
+          </Link>
           <Button
             variant="ghost"
             size="sm"

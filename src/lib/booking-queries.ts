@@ -122,6 +122,9 @@ export type AppointmentDetail = {
   payment_status: string | null;
   patient_notes: string | null;
   created_at: string;
+  appointment_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
   doctor_id: string;
   consultation_type_id: string;
   availability_slot_id: string;
@@ -154,7 +157,7 @@ export async function fetchAppointmentById(id: string): Promise<AppointmentDetai
   const { data, error } = await db
     .from("appointments")
     .select(
-      "id, appointment_status, payment_status, patient_notes, created_at, doctor_id, consultation_type_id, availability_slot_id, doctors(id, full_name, specialization, profile_image_url, qualifications, experience_years), consultation_types(id, name, mode, duration_minutes, fee, currency), availability_slots(id, slot_date, start_time, end_time, status)",
+      "id, appointment_status, payment_status, patient_notes, created_at, appointment_date, start_time, end_time, doctor_id, consultation_type_id, availability_slot_id, doctors(id, full_name, specialization, profile_image_url, qualifications, experience_years), consultation_types(id, name, mode, duration_minutes, fee, currency), availability_slots(id, slot_date, start_time, end_time, status)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -221,6 +224,10 @@ function localDateTime(dateStr: string, timeStr: string): number {
     ss ?? 0,
   );
   return dt.getTime();
+}
+
+export function localDateTimeMs(dateStr: string, timeStr: string): number {
+  return localDateTime(dateStr, timeStr);
 }
 
 export function isSlotExpired(slot: { slot_date: string; end_time: string }): boolean {
