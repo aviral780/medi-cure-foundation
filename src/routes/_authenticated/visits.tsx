@@ -160,7 +160,7 @@ function VisitCard({
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-foreground">{doc?.full_name ?? "Doctor"}</p>
+            <p className="truncate text-base font-semibold text-foreground">{doc?.full_name ?? "Your doctor"}</p>
             <p className="truncate text-xs text-muted-foreground">{doc?.specialization ?? ""}</p>
           </div>
           <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -196,6 +196,7 @@ function VisitCard({
             <Link
               to="/appointments/$appointmentId/reschedule"
               params={{ appointmentId: visit.id }}
+              onClick={(e) => e.stopPropagation()}
             >
               <CalendarClock className="mr-1.5 h-4 w-4" aria-hidden /> Reschedule
             </Link>
@@ -204,7 +205,11 @@ function VisitCard({
             variant="ghost"
             size="sm"
             className="h-10 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => onCancel?.(visit.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onCancel?.(visit.id);
+            }}
           >
             <X className="mr-1.5 h-4 w-4" aria-hidden /> Cancel
           </Button>
