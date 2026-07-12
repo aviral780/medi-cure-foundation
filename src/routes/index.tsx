@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarCheck, ShieldCheck, Video } from "lucide-react";
+import { CalendarCheck, CalendarDays, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 
@@ -25,17 +25,17 @@ function Index() {
               Care, when you need it
             </span>
             <h1 className="mt-5 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-              Book trusted doctors,{" "}
+              Book your consultation,{" "}
               <span className="text-primary">in-person or online.</span>
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              MediCure connects you with verified specialists for consultations
-              that fit your schedule — from your neighborhood clinic to a
-              secure video visit.
+              MediCure makes it simple to book a visit with our clinic —
+              choose an in-person appointment or a secure video consultation
+              that fits your schedule.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-12 rounded-xl px-6 text-base">
-                <Link to="/doctors">Find a doctor</Link>
+                <Link to="/doctors">Book consultation</Link>
               </Button>
               <Button
                 asChild
@@ -56,6 +56,7 @@ function Index() {
             <Link
               key={f.title}
               to={f.to}
+              search={f.search as never}
               className="group block rounded-2xl border border-border bg-card p-6 text-left shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-elevated)]"
             >
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary">
@@ -79,19 +80,22 @@ const features = [
   {
     icon: CalendarCheck,
     title: "Real-time availability",
-    body: "See open slots from real doctor calendars and book in under a minute.",
+    body: "See open slots from the clinic's live calendar and book in under a minute.",
     to: "/doctors",
+    search: undefined,
   },
   {
     icon: Video,
     title: "Secure teleconsultations",
     body: "Meet your doctor over encrypted video from anywhere, on any device.",
     to: "/doctors",
+    search: { mode: "online" },
   },
   {
-    icon: ShieldCheck,
-    title: "Verified specialists",
-    body: "Every practitioner on MediCure is credential-checked and reviewed.",
-    to: "/doctors",
+    icon: CalendarDays,
+    title: "My Appointments",
+    body: "View upcoming and past consultations, manage bookings, reschedule or cancel appointments.",
+    to: "/visits",
+    search: undefined,
   },
 ] as const;
