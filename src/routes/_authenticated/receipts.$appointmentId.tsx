@@ -85,9 +85,9 @@ function ReceiptPage() {
               <Field label="Date" value={date ? formatFullDate(date) : "—"} />
               <Field label="Time" value={startTime && endTime ? `${formatTime(startTime)} – ${formatTime(endTime)}` : "—"} />
               <Field label="Amount" value={formatFee(amount, currency)} />
-              <Field label="Payment method" value={pay?.payment_method ? pay.payment_method.toUpperCase() : "—"} />
-              <Field label="Payment ID" value={pay?.razorpay_payment_id ?? "—"} mono />
-              <Field label="Order ID" value={pay?.razorpay_order_id ?? "—"} mono />
+              <Field label="Gateway" value={pay?.payment_gateway ? pay.payment_gateway.toUpperCase() : "—"} />
+              <Field label="Payment ID" value={pay?.gateway_payment_id ?? "—"} mono />
+              <Field label="Order ID" value={pay?.gateway_order_id ?? "—"} mono />
               <Field label="Appointment ID" value={appt.id} mono />
               <Field label="Issued on" value={pay?.created_at ? new Date(pay.created_at).toLocaleString() : new Date().toLocaleString()} />
             </dl>
