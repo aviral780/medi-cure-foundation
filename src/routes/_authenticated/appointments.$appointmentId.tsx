@@ -171,14 +171,14 @@ function AppointmentDetailsPage() {
               </div>
             )}
 
-            {isPaid && payment?.razorpay_payment_id && (
+            {isPaid && payment?.gateway_payment_id && (
               <div className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)]">
                 <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   <CreditCard className="h-4 w-4" aria-hidden /> Payment
                 </div>
                 <dl className="mt-3 space-y-1.5 text-sm">
-                  <div className="flex justify-between"><dt className="text-muted-foreground">Method</dt><dd className="font-medium">{payment.payment_method?.toUpperCase() ?? "—"}</dd></div>
-                  <div className="flex justify-between gap-3"><dt className="text-muted-foreground">Payment ID</dt><dd className="font-mono text-xs break-all">{payment.razorpay_payment_id}</dd></div>
+                  <div className="flex justify-between"><dt className="text-muted-foreground">Gateway</dt><dd className="font-medium capitalize">{payment.payment_gateway ?? "—"}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-muted-foreground">Payment ID</dt><dd className="font-mono text-xs break-all">{payment.gateway_payment_id}</dd></div>
                 </dl>
                 <Button asChild variant="outline" size="sm" className="mt-3 h-10 rounded-lg">
                   <Link to="/receipts/$appointmentId" params={{ appointmentId }}>

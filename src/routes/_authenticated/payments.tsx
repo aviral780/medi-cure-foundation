@@ -55,7 +55,7 @@ function PaymentHistoryPage() {
                       <p className="truncate text-sm font-semibold text-foreground">{doc}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         {date ? formatFullDate(date) : new Date(p.created_at).toLocaleDateString()}
-                        {p.payment_method ? ` · ${p.payment_method.toUpperCase()}` : ""}
+                        {p.payment_gateway ? ` · ${p.payment_gateway.toUpperCase()}` : ""}
                       </p>
                       <div className="mt-2"><StatusBadge status={p.status} /></div>
                     </div>
