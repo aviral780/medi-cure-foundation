@@ -6,10 +6,11 @@ export type PaymentRow = {
   patient_id: string;
   amount: number;
   currency: string;
-  payment_method: string | null;
-  razorpay_order_id: string;
-  razorpay_payment_id: string | null;
-  razorpay_signature: string | null;
+  payment_gateway: string;
+  gateway_order_id: string;
+  gateway_payment_id: string | null;
+  gateway_signature: string | null;
+  paid_at: string | null;
   status: string;
   error_description: string | null;
   created_at: string;
