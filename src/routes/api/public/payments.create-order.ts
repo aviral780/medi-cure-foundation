@@ -57,7 +57,8 @@ export const Route = createFileRoute("/api/public/payments/create-order")({
               patient_id: userId,
               amount: fee,
               currency,
-              razorpay_order_id: order.id,
+              payment_gateway: "razorpay",
+              gateway_order_id: order.id,
               status: "created",
             })
             .select("id")
