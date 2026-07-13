@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/public/payments/verify")({
           const { data: paymentRow, error: pErr } = await supabase
             .from("payments")
             .select("id, patient_id, appointment_id, status")
-            .eq("razorpay_order_id", body.razorpay_order_id)
+            .eq("gateway_order_id", body.razorpay_order_id)
             .maybeSingle();
           if (pErr) return jsonError(500, pErr.message);
           if (!paymentRow) return jsonError(404, "Payment record not found");
@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/payments/verify")({
               .update({
                 status: "failed",
                 error_description: "Signature verification failed",
-                razorpay_payment_id: body.razorpay_payment_id,
+                gateway_payment_id: body.razorpay_payment_id,
                 updated_at: new Date().toISOString(),
               })
               .eq("id", (paymentRow as any).id);
@@ -71,9 +71,9 @@ export const Route = createFileRoute("/api/public/payments/verify")({
             .from("payments")
             .update({
               status: "paid",
-              payment_method: details.method,
-              razorpay_payment_id: body.razorpay_payment_id,
-              razorpay_signature: body.razorpay_signature,
+              gateway_payment_id: body.razorpay_payment_id,
+              gateway_signature: body.razorpay_signature,
+              paid_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
             .eq("id", (paymentRow as any).id);
