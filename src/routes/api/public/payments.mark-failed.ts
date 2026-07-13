@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/public/payments/mark-failed")({
               error_description: body.reason ?? "Payment not completed",
               updated_at: new Date().toISOString(),
             })
-            .eq("razorpay_order_id", body.razorpay_order_id)
+            .eq("gateway_order_id", body.razorpay_order_id)
             .eq("patient_id", userId);
           if (error) return jsonError(500, error.message);
           return jsonOk({ ok: true });
