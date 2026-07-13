@@ -50,27 +50,28 @@ export const Route = createFileRoute("/api/public/payments/create-order")({
             notes: { appointment_id: appointmentId, patient_id: userId },
           });
 
-          const { data: inserted, error: insErr } = await supabase
-            .from("payments")
-            .insert({
-              appointment_id: appointmentId,
-              patient_id: userId,
-              amount: fee,
-              currency,
-              payment_gateway: "razorpay",
-              gateway_order_id: order.id,
-              status: "created",
-            })
-            .select("id")
-            .single();
+          // Insert via SECURITY DEFINER RPC — the payments RLS policy rejects
+          // direct client inserts, so this trusted path re-validates ownership
+          // against auth.uid() and inserts with definer privileges.
+          const { data: paymentRowId, error: insErr } = await supabase.rpc(
+            "create_payment_intent",
+            {
+              p_appointment_id: appointmentId,
+              p_amount: fee,
+              p_currency: currency,
+              p_payment_gateway: "razorpay",
+              p_gateway_order_id: order.id,
+            },
+          );
           if (insErr) return jsonError(500, `Could not record payment: ${insErr.message}`);
+          if (!paymentRowId) return jsonError(500, "Could not record payment");
 
           return jsonOk({
             orderId: order.id,
             amount: order.amount,
             currency: order.currency,
             keyId: order.keyId,
-            paymentRowId: (inserted as { id: string }).id,
+            paymentRowId: paymentRowId as string,
             appointment: {
               id: appointmentId,
               doctorName: (appt as any).doctors?.full_name ?? "",
