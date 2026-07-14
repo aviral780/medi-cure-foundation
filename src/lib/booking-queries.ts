@@ -242,6 +242,47 @@ export const CANCEL_CUTOFF_HOURS = 6;
 export const CANCEL_CUTOFF_MESSAGE =
   "Appointments cannot be cancelled within 6 hours of the scheduled time.";
 
+export const RESCHEDULE_CUTOFF_HOURS = 4;
+export const RESCHEDULE_FEE_INR = 100;
+export const RESCHEDULE_CUTOFF_MESSAGE =
+  "Appointments cannot be rescheduled within 4 hours of the scheduled time.";
+
+export type RescheduleEligibility =
+  | { canReschedule: true }
+  | { canReschedule: false; reason: string };
+
+export function evaluateRescheduleEligibility(params: {
+  appointmentStatus: string | null | undefined;
+  startDate: string | null | undefined;
+  startTime: string | null | undefined;
+}): RescheduleEligibility {
+  const status = (params.appointmentStatus ?? "").toLowerCase();
+  if (status === "cancelled" || status === "canceled") {
+    return { canReschedule: false, reason: "Cancelled appointments cannot be rescheduled." };
+  }
+  if (status === "completed") {
+    return { canReschedule: false, reason: "Completed appointments cannot be rescheduled." };
+  }
+  if (status === "rescheduled") {
+    return { canReschedule: false, reason: "This appointment has already been rescheduled." };
+  }
+  if (status !== "confirmed") {
+    return { canReschedule: false, reason: "Only confirmed appointments can be rescheduled." };
+  }
+  if (!params.startDate || !params.startTime) {
+    return { canReschedule: false, reason: "Missing schedule information." };
+  }
+  const startMs = localDateTime(params.startDate, params.startTime);
+  const hoursUntil = (startMs - Date.now()) / 3_600_000;
+  if (hoursUntil <= 0) {
+    return { canReschedule: false, reason: "This appointment has already started." };
+  }
+  if (hoursUntil < RESCHEDULE_CUTOFF_HOURS) {
+    return { canReschedule: false, reason: RESCHEDULE_CUTOFF_MESSAGE };
+  }
+  return { canReschedule: true };
+}
+
 export type CancelEligibility =
   | { canCancel: true }
   | { canCancel: false; reason: string };

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   fetchAppointmentById,
   evaluateCancelEligibility,
+  evaluateRescheduleEligibility,
   formatFee,
   formatFullDate,
   formatMode,
@@ -54,6 +55,13 @@ function AppointmentDetailsPage() {
         startTime: scheduleStartTime,
       })
     : { canCancel: false, reason: "" };
+  const rescheduleEligibility = data
+    ? evaluateRescheduleEligibility({
+        appointmentStatus: data.appointment_status,
+        startDate: scheduleDate,
+        startTime: scheduleStartTime,
+      })
+    : { canReschedule: false as const, reason: "" };
 
   return (
     <AppShell>
@@ -200,14 +208,20 @@ function AppointmentDetailsPage() {
             {canModify ? (
               <div className="mt-6 space-y-2">
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <Button asChild variant="outline" className="h-12 rounded-xl">
-                    <Link
-                      to="/appointments/$appointmentId/reschedule"
-                      params={{ appointmentId }}
-                    >
+                  {rescheduleEligibility.canReschedule ? (
+                    <Button asChild variant="outline" className="h-12 rounded-xl">
+                      <Link
+                        to="/appointments/$appointmentId/reschedule"
+                        params={{ appointmentId }}
+                      >
+                        <CalendarClock className="mr-2 h-4 w-4" aria-hidden /> Reschedule
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button variant="outline" className="h-12 rounded-xl" disabled>
                       <CalendarClock className="mr-2 h-4 w-4" aria-hidden /> Reschedule
-                    </Link>
-                  </Button>
+                    </Button>
+                  )}
                   <Button
                     variant="destructive"
                     className="h-12 rounded-xl"
@@ -217,6 +231,11 @@ function AppointmentDetailsPage() {
                     <X className="mr-2 h-4 w-4" aria-hidden /> Cancel appointment
                   </Button>
                 </div>
+                {!rescheduleEligibility.canReschedule && "reason" in rescheduleEligibility && rescheduleEligibility.reason && (
+                  <p className="rounded-xl border border-dashed border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                    {rescheduleEligibility.reason}
+                  </p>
+                )}
                 {!cancelEligibility.canCancel && "reason" in cancelEligibility && cancelEligibility.reason && (
                   <p className="rounded-xl border border-dashed border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                     {cancelEligibility.reason}

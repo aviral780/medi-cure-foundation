@@ -18,13 +18,17 @@ import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as DoctorsDoctorIdIndexRouteImport } from './routes/doctors.$doctorId.index'
+import { Route as AuthenticatedReschedulePaymentAppointmentIdRouteImport } from './routes/_authenticated/reschedule-payment.$appointmentId'
 import { Route as AuthenticatedReceiptsAppointmentIdRouteImport } from './routes/_authenticated/receipts.$appointmentId'
 import { Route as AuthenticatedPaymentAppointmentIdRouteImport } from './routes/_authenticated/payment.$appointmentId'
 import { Route as AuthenticatedBookingReviewRouteImport } from './routes/_authenticated/booking.review'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments.$appointmentId'
+import { Route as ApiPublicRescheduleVerifyRouteImport } from './routes/api/public/reschedule.verify'
+import { Route as ApiPublicRescheduleCreateOrderRouteImport } from './routes/api/public/reschedule.create-order'
 import { Route as ApiPublicPaymentsVerifyRouteImport } from './routes/api/public/payments.verify'
 import { Route as ApiPublicPaymentsMarkFailedRouteImport } from './routes/api/public/payments.mark-failed'
 import { Route as ApiPublicPaymentsCreateOrderRouteImport } from './routes/api/public/payments.create-order'
+import { Route as ApiPublicNotificationsAppointmentRescheduledRouteImport } from './routes/api/public/notifications.appointment-rescheduled'
 import { Route as ApiPublicNotificationsAppointmentCancelledRouteImport } from './routes/api/public/notifications.appointment-cancelled'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 import { Route as AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport } from './routes/_authenticated/appointments.$appointmentId.reschedule'
@@ -73,6 +77,12 @@ const DoctorsDoctorIdIndexRoute = DoctorsDoctorIdIndexRouteImport.update({
   path: '/doctors/$doctorId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedReschedulePaymentAppointmentIdRoute =
+  AuthenticatedReschedulePaymentAppointmentIdRouteImport.update({
+    id: '/reschedule-payment/$appointmentId',
+    path: '/reschedule-payment/$appointmentId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedReceiptsAppointmentIdRoute =
   AuthenticatedReceiptsAppointmentIdRouteImport.update({
     id: '/receipts/$appointmentId',
@@ -97,6 +107,18 @@ const AuthenticatedAppointmentsAppointmentIdRoute =
     path: '/appointments/$appointmentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicRescheduleVerifyRoute =
+  ApiPublicRescheduleVerifyRouteImport.update({
+    id: '/api/public/reschedule/verify',
+    path: '/api/public/reschedule/verify',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRescheduleCreateOrderRoute =
+  ApiPublicRescheduleCreateOrderRouteImport.update({
+    id: '/api/public/reschedule/create-order',
+    path: '/api/public/reschedule/create-order',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsVerifyRoute = ApiPublicPaymentsVerifyRouteImport.update({
   id: '/api/public/payments/verify',
   path: '/api/public/payments/verify',
@@ -112,6 +134,12 @@ const ApiPublicPaymentsCreateOrderRoute =
   ApiPublicPaymentsCreateOrderRouteImport.update({
     id: '/api/public/payments/create-order',
     path: '/api/public/payments/create-order',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicNotificationsAppointmentRescheduledRoute =
+  ApiPublicNotificationsAppointmentRescheduledRouteImport.update({
+    id: '/api/public/notifications/appointment-rescheduled',
+    path: '/api/public/notifications/appointment-rescheduled',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicNotificationsAppointmentCancelledRoute =
@@ -145,13 +173,17 @@ export interface FileRoutesByFullPath {
   '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
   '/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
+  '/reschedule-payment/$appointmentId': typeof AuthenticatedReschedulePaymentAppointmentIdRoute
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
+  '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
   '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
   '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
+  '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
+  '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -165,13 +197,17 @@ export interface FileRoutesByTo {
   '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
   '/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
+  '/reschedule-payment/$appointmentId': typeof AuthenticatedReschedulePaymentAppointmentIdRoute
   '/doctors/$doctorId': typeof DoctorsDoctorIdIndexRoute
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
+  '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
   '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
   '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
+  '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
+  '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -187,13 +223,17 @@ export interface FileRoutesById {
   '/_authenticated/booking/review': typeof AuthenticatedBookingReviewRoute
   '/_authenticated/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
   '/_authenticated/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
+  '/_authenticated/reschedule-payment/$appointmentId': typeof AuthenticatedReschedulePaymentAppointmentIdRoute
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/_authenticated/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
+  '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
   '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
   '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
+  '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
+  '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -209,13 +249,17 @@ export interface FileRouteTypes {
     | '/booking/review'
     | '/payment/$appointmentId'
     | '/receipts/$appointmentId'
+    | '/reschedule-payment/$appointmentId'
     | '/doctors/$doctorId/'
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
     | '/api/public/notifications/appointment-cancelled'
+    | '/api/public/notifications/appointment-rescheduled'
     | '/api/public/payments/create-order'
     | '/api/public/payments/mark-failed'
     | '/api/public/payments/verify'
+    | '/api/public/reschedule/create-order'
+    | '/api/public/reschedule/verify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -229,13 +273,17 @@ export interface FileRouteTypes {
     | '/booking/review'
     | '/payment/$appointmentId'
     | '/receipts/$appointmentId'
+    | '/reschedule-payment/$appointmentId'
     | '/doctors/$doctorId'
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
     | '/api/public/notifications/appointment-cancelled'
+    | '/api/public/notifications/appointment-rescheduled'
     | '/api/public/payments/create-order'
     | '/api/public/payments/mark-failed'
     | '/api/public/payments/verify'
+    | '/api/public/reschedule/create-order'
+    | '/api/public/reschedule/verify'
   id:
     | '__root__'
     | '/'
@@ -250,13 +298,17 @@ export interface FileRouteTypes {
     | '/_authenticated/booking/review'
     | '/_authenticated/payment/$appointmentId'
     | '/_authenticated/receipts/$appointmentId'
+    | '/_authenticated/reschedule-payment/$appointmentId'
     | '/doctors/$doctorId/'
     | '/_authenticated/appointments/$appointmentId/reschedule'
     | '/_authenticated/doctors/$doctorId/book'
     | '/api/public/notifications/appointment-cancelled'
+    | '/api/public/notifications/appointment-rescheduled'
     | '/api/public/payments/create-order'
     | '/api/public/payments/mark-failed'
     | '/api/public/payments/verify'
+    | '/api/public/reschedule/create-order'
+    | '/api/public/reschedule/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -267,9 +319,12 @@ export interface RootRouteChildren {
   DoctorsIndexRoute: typeof DoctorsIndexRoute
   DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
   ApiPublicNotificationsAppointmentCancelledRoute: typeof ApiPublicNotificationsAppointmentCancelledRoute
+  ApiPublicNotificationsAppointmentRescheduledRoute: typeof ApiPublicNotificationsAppointmentRescheduledRoute
   ApiPublicPaymentsCreateOrderRoute: typeof ApiPublicPaymentsCreateOrderRoute
   ApiPublicPaymentsMarkFailedRoute: typeof ApiPublicPaymentsMarkFailedRoute
   ApiPublicPaymentsVerifyRoute: typeof ApiPublicPaymentsVerifyRoute
+  ApiPublicRescheduleCreateOrderRoute: typeof ApiPublicRescheduleCreateOrderRoute
+  ApiPublicRescheduleVerifyRoute: typeof ApiPublicRescheduleVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -337,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorsDoctorIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/reschedule-payment/$appointmentId': {
+      id: '/_authenticated/reschedule-payment/$appointmentId'
+      path: '/reschedule-payment/$appointmentId'
+      fullPath: '/reschedule-payment/$appointmentId'
+      preLoaderRoute: typeof AuthenticatedReschedulePaymentAppointmentIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/receipts/$appointmentId': {
       id: '/_authenticated/receipts/$appointmentId'
       path: '/receipts/$appointmentId'
@@ -365,6 +427,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/reschedule/verify': {
+      id: '/api/public/reschedule/verify'
+      path: '/api/public/reschedule/verify'
+      fullPath: '/api/public/reschedule/verify'
+      preLoaderRoute: typeof ApiPublicRescheduleVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/reschedule/create-order': {
+      id: '/api/public/reschedule/create-order'
+      path: '/api/public/reschedule/create-order'
+      fullPath: '/api/public/reschedule/create-order'
+      preLoaderRoute: typeof ApiPublicRescheduleCreateOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/verify': {
       id: '/api/public/payments/verify'
       path: '/api/public/payments/verify'
@@ -384,6 +460,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/payments/create-order'
       fullPath: '/api/public/payments/create-order'
       preLoaderRoute: typeof ApiPublicPaymentsCreateOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/notifications/appointment-rescheduled': {
+      id: '/api/public/notifications/appointment-rescheduled'
+      path: '/api/public/notifications/appointment-rescheduled'
+      fullPath: '/api/public/notifications/appointment-rescheduled'
+      preLoaderRoute: typeof ApiPublicNotificationsAppointmentRescheduledRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/notifications/appointment-cancelled': {
@@ -433,6 +516,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBookingReviewRoute: typeof AuthenticatedBookingReviewRoute
   AuthenticatedPaymentAppointmentIdRoute: typeof AuthenticatedPaymentAppointmentIdRoute
   AuthenticatedReceiptsAppointmentIdRoute: typeof AuthenticatedReceiptsAppointmentIdRoute
+  AuthenticatedReschedulePaymentAppointmentIdRoute: typeof AuthenticatedReschedulePaymentAppointmentIdRoute
   AuthenticatedDoctorsDoctorIdBookRoute: typeof AuthenticatedDoctorsDoctorIdBookRoute
 }
 
@@ -447,6 +531,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPaymentAppointmentIdRoute,
   AuthenticatedReceiptsAppointmentIdRoute:
     AuthenticatedReceiptsAppointmentIdRoute,
+  AuthenticatedReschedulePaymentAppointmentIdRoute:
+    AuthenticatedReschedulePaymentAppointmentIdRoute,
   AuthenticatedDoctorsDoctorIdBookRoute: AuthenticatedDoctorsDoctorIdBookRoute,
 }
 
@@ -462,9 +548,13 @@ const rootRouteChildren: RootRouteChildren = {
   DoctorsDoctorIdIndexRoute: DoctorsDoctorIdIndexRoute,
   ApiPublicNotificationsAppointmentCancelledRoute:
     ApiPublicNotificationsAppointmentCancelledRoute,
+  ApiPublicNotificationsAppointmentRescheduledRoute:
+    ApiPublicNotificationsAppointmentRescheduledRoute,
   ApiPublicPaymentsCreateOrderRoute: ApiPublicPaymentsCreateOrderRoute,
   ApiPublicPaymentsMarkFailedRoute: ApiPublicPaymentsMarkFailedRoute,
   ApiPublicPaymentsVerifyRoute: ApiPublicPaymentsVerifyRoute,
+  ApiPublicRescheduleCreateOrderRoute: ApiPublicRescheduleCreateOrderRoute,
+  ApiPublicRescheduleVerifyRoute: ApiPublicRescheduleVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
