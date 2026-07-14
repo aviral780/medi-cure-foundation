@@ -22,7 +22,7 @@ import { Route as AuthenticatedReschedulePaymentAppointmentIdRouteImport } from 
 import { Route as AuthenticatedReceiptsAppointmentIdRouteImport } from './routes/_authenticated/receipts.$appointmentId'
 import { Route as AuthenticatedPaymentAppointmentIdRouteImport } from './routes/_authenticated/payment.$appointmentId'
 import { Route as AuthenticatedBookingReviewRouteImport } from './routes/_authenticated/booking.review'
-import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments.$appointmentId'
+import { Route as AuthenticatedAppointmentsAppointmentIdIndexRouteImport } from './routes/_authenticated/appointments.$appointmentId.index'
 import { Route as ApiPublicRescheduleVerifyRouteImport } from './routes/api/public/reschedule.verify'
 import { Route as ApiPublicRescheduleCreateOrderRouteImport } from './routes/api/public/reschedule.create-order'
 import { Route as ApiPublicPaymentsVerifyRouteImport } from './routes/api/public/payments.verify'
@@ -101,10 +101,10 @@ const AuthenticatedBookingReviewRoute =
     path: '/booking/review',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAppointmentsAppointmentIdRoute =
-  AuthenticatedAppointmentsAppointmentIdRouteImport.update({
-    id: '/appointments/$appointmentId',
-    path: '/appointments/$appointmentId',
+const AuthenticatedAppointmentsAppointmentIdIndexRoute =
+  AuthenticatedAppointmentsAppointmentIdIndexRouteImport.update({
+    id: '/appointments/$appointmentId/',
+    path: '/appointments/$appointmentId/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const ApiPublicRescheduleVerifyRoute =
@@ -156,9 +156,9 @@ const AuthenticatedDoctorsDoctorIdBookRoute =
   } as any)
 const AuthenticatedAppointmentsAppointmentIdRescheduleRoute =
   AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport.update({
-    id: '/reschedule',
-    path: '/reschedule',
-    getParentRoute: () => AuthenticatedAppointmentsAppointmentIdRoute,
+    id: '/appointments/$appointmentId/reschedule',
+    path: '/appointments/$appointmentId/reschedule',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -169,7 +169,6 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
   '/doctors/': typeof DoctorsIndexRoute
-  '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
   '/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
@@ -184,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
   '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
   '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
+  '/appointments/$appointmentId/': typeof AuthenticatedAppointmentsAppointmentIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -193,7 +193,6 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
   '/doctors': typeof DoctorsIndexRoute
-  '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
   '/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
@@ -208,6 +207,7 @@ export interface FileRoutesByTo {
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
   '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
   '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
+  '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -219,7 +219,6 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRoute
   '/doctors/': typeof DoctorsIndexRoute
-  '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   '/_authenticated/booking/review': typeof AuthenticatedBookingReviewRoute
   '/_authenticated/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
   '/_authenticated/receipts/$appointmentId': typeof AuthenticatedReceiptsAppointmentIdRoute
@@ -234,6 +233,7 @@ export interface FileRoutesById {
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
   '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
   '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
+  '/_authenticated/appointments/$appointmentId/': typeof AuthenticatedAppointmentsAppointmentIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -245,7 +245,6 @@ export interface FileRouteTypes {
     | '/payments'
     | '/visits'
     | '/doctors/'
-    | '/appointments/$appointmentId'
     | '/booking/review'
     | '/payment/$appointmentId'
     | '/receipts/$appointmentId'
@@ -260,6 +259,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/verify'
     | '/api/public/reschedule/create-order'
     | '/api/public/reschedule/verify'
+    | '/appointments/$appointmentId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -269,7 +269,6 @@ export interface FileRouteTypes {
     | '/payments'
     | '/visits'
     | '/doctors'
-    | '/appointments/$appointmentId'
     | '/booking/review'
     | '/payment/$appointmentId'
     | '/receipts/$appointmentId'
@@ -284,6 +283,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/verify'
     | '/api/public/reschedule/create-order'
     | '/api/public/reschedule/verify'
+    | '/appointments/$appointmentId'
   id:
     | '__root__'
     | '/'
@@ -294,7 +294,6 @@ export interface FileRouteTypes {
     | '/_authenticated/payments'
     | '/_authenticated/visits'
     | '/doctors/'
-    | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/booking/review'
     | '/_authenticated/payment/$appointmentId'
     | '/_authenticated/receipts/$appointmentId'
@@ -309,6 +308,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/verify'
     | '/api/public/reschedule/create-order'
     | '/api/public/reschedule/verify'
+    | '/_authenticated/appointments/$appointmentId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -420,11 +420,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/appointments/$appointmentId': {
-      id: '/_authenticated/appointments/$appointmentId'
+    '/_authenticated/appointments/$appointmentId/': {
+      id: '/_authenticated/appointments/$appointmentId/'
       path: '/appointments/$appointmentId'
-      fullPath: '/appointments/$appointmentId'
-      preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
+      fullPath: '/appointments/$appointmentId/'
+      preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/reschedule/verify': {
@@ -485,47 +485,31 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/appointments/$appointmentId/reschedule': {
       id: '/_authenticated/appointments/$appointmentId/reschedule'
-      path: '/reschedule'
+      path: '/appointments/$appointmentId/reschedule'
       fullPath: '/appointments/$appointmentId/reschedule'
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport
-      parentRoute: typeof AuthenticatedAppointmentsAppointmentIdRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
-
-interface AuthenticatedAppointmentsAppointmentIdRouteChildren {
-  AuthenticatedAppointmentsAppointmentIdRescheduleRoute: typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
-}
-
-const AuthenticatedAppointmentsAppointmentIdRouteChildren: AuthenticatedAppointmentsAppointmentIdRouteChildren =
-  {
-    AuthenticatedAppointmentsAppointmentIdRescheduleRoute:
-      AuthenticatedAppointmentsAppointmentIdRescheduleRoute,
-  }
-
-const AuthenticatedAppointmentsAppointmentIdRouteWithChildren =
-  AuthenticatedAppointmentsAppointmentIdRoute._addFileChildren(
-    AuthenticatedAppointmentsAppointmentIdRouteChildren,
-  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedVisitsRoute: typeof AuthenticatedVisitsRoute
-  AuthenticatedAppointmentsAppointmentIdRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteWithChildren
   AuthenticatedBookingReviewRoute: typeof AuthenticatedBookingReviewRoute
   AuthenticatedPaymentAppointmentIdRoute: typeof AuthenticatedPaymentAppointmentIdRoute
   AuthenticatedReceiptsAppointmentIdRoute: typeof AuthenticatedReceiptsAppointmentIdRoute
   AuthenticatedReschedulePaymentAppointmentIdRoute: typeof AuthenticatedReschedulePaymentAppointmentIdRoute
+  AuthenticatedAppointmentsAppointmentIdRescheduleRoute: typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   AuthenticatedDoctorsDoctorIdBookRoute: typeof AuthenticatedDoctorsDoctorIdBookRoute
+  AuthenticatedAppointmentsAppointmentIdIndexRoute: typeof AuthenticatedAppointmentsAppointmentIdIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedVisitsRoute: AuthenticatedVisitsRoute,
-  AuthenticatedAppointmentsAppointmentIdRoute:
-    AuthenticatedAppointmentsAppointmentIdRouteWithChildren,
   AuthenticatedBookingReviewRoute: AuthenticatedBookingReviewRoute,
   AuthenticatedPaymentAppointmentIdRoute:
     AuthenticatedPaymentAppointmentIdRoute,
@@ -533,7 +517,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedReceiptsAppointmentIdRoute,
   AuthenticatedReschedulePaymentAppointmentIdRoute:
     AuthenticatedReschedulePaymentAppointmentIdRoute,
+  AuthenticatedAppointmentsAppointmentIdRescheduleRoute:
+    AuthenticatedAppointmentsAppointmentIdRescheduleRoute,
   AuthenticatedDoctorsDoctorIdBookRoute: AuthenticatedDoctorsDoctorIdBookRoute,
+  AuthenticatedAppointmentsAppointmentIdIndexRoute:
+    AuthenticatedAppointmentsAppointmentIdIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -559,13 +547,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

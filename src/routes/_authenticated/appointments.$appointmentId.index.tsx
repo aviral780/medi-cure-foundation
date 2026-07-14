@@ -19,7 +19,7 @@ import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadge
 import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
 import { fetchLatestPaymentForAppointment } from "@/lib/payments-api";
 
-export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
+export const Route = createFileRoute("/_authenticated/appointments/$appointmentId/")({
   component: AppointmentDetailsPage,
 });
 
