@@ -22,6 +22,7 @@ import { Route as AuthenticatedReceiptsAppointmentIdRouteImport } from './routes
 import { Route as AuthenticatedPaymentAppointmentIdRouteImport } from './routes/_authenticated/payment.$appointmentId'
 import { Route as AuthenticatedBookingReviewRouteImport } from './routes/_authenticated/booking.review'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments.$appointmentId'
+import { Route as ApiPublicRescheduleCreateOrderRouteImport } from './routes/api/public/reschedule.create-order'
 import { Route as ApiPublicPaymentsVerifyRouteImport } from './routes/api/public/payments.verify'
 import { Route as ApiPublicPaymentsMarkFailedRouteImport } from './routes/api/public/payments.mark-failed'
 import { Route as ApiPublicPaymentsCreateOrderRouteImport } from './routes/api/public/payments.create-order'
@@ -97,6 +98,12 @@ const AuthenticatedAppointmentsAppointmentIdRoute =
     path: '/appointments/$appointmentId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicRescheduleCreateOrderRoute =
+  ApiPublicRescheduleCreateOrderRouteImport.update({
+    id: '/api/public/reschedule/create-order',
+    path: '/api/public/reschedule/create-order',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsVerifyRoute = ApiPublicPaymentsVerifyRouteImport.update({
   id: '/api/public/payments/verify',
   path: '/api/public/payments/verify',
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
   '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
+  '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -172,6 +180,7 @@ export interface FileRoutesByTo {
   '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
   '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
+  '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -194,6 +203,7 @@ export interface FileRoutesById {
   '/api/public/payments/create-order': typeof ApiPublicPaymentsCreateOrderRoute
   '/api/public/payments/mark-failed': typeof ApiPublicPaymentsMarkFailedRoute
   '/api/public/payments/verify': typeof ApiPublicPaymentsVerifyRoute
+  '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/create-order'
     | '/api/public/payments/mark-failed'
     | '/api/public/payments/verify'
+    | '/api/public/reschedule/create-order'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/create-order'
     | '/api/public/payments/mark-failed'
     | '/api/public/payments/verify'
+    | '/api/public/reschedule/create-order'
   id:
     | '__root__'
     | '/'
@@ -257,6 +269,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/create-order'
     | '/api/public/payments/mark-failed'
     | '/api/public/payments/verify'
+    | '/api/public/reschedule/create-order'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -270,6 +283,7 @@ export interface RootRouteChildren {
   ApiPublicPaymentsCreateOrderRoute: typeof ApiPublicPaymentsCreateOrderRoute
   ApiPublicPaymentsMarkFailedRoute: typeof ApiPublicPaymentsMarkFailedRoute
   ApiPublicPaymentsVerifyRoute: typeof ApiPublicPaymentsVerifyRoute
+  ApiPublicRescheduleCreateOrderRoute: typeof ApiPublicRescheduleCreateOrderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -364,6 +378,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/appointments/$appointmentId'
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/reschedule/create-order': {
+      id: '/api/public/reschedule/create-order'
+      path: '/api/public/reschedule/create-order'
+      fullPath: '/api/public/reschedule/create-order'
+      preLoaderRoute: typeof ApiPublicRescheduleCreateOrderRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/payments/verify': {
       id: '/api/public/payments/verify'
@@ -465,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPaymentsCreateOrderRoute: ApiPublicPaymentsCreateOrderRoute,
   ApiPublicPaymentsMarkFailedRoute: ApiPublicPaymentsMarkFailedRoute,
   ApiPublicPaymentsVerifyRoute: ApiPublicPaymentsVerifyRoute,
+  ApiPublicRescheduleCreateOrderRoute: ApiPublicRescheduleCreateOrderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/supabase";
 import {
   fetchAllSlots,
   fetchAppointmentById,
@@ -14,6 +13,8 @@ import {
   isSlotExpired,
   isSlotStartInPast,
   localDateTimeMs,
+  evaluateRescheduleEligibility,
+  RESCHEDULE_FEE_INR,
   type AvailabilitySlot,
 } from "@/lib/booking-queries";
 import { SlotButton } from "@/components/booking/SlotButton";
@@ -26,6 +27,7 @@ function ReschedulePage() {
   const { appointmentId } = Route.useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  void queryClient;
 
   const apptQ = useQuery({
     queryKey: ["appointment", appointmentId],
@@ -37,11 +39,19 @@ function ReschedulePage() {
   const currentSlotId = apptQ.data?.availability_slot_id;
   const currentSlot = apptQ.data?.availability_slots;
   const currentDate = apptQ.data?.appointment_date ?? currentSlot?.slot_date ?? null;
+  const currentStartTime = apptQ.data?.start_time ?? currentSlot?.start_time ?? null;
   const currentEndTime = apptQ.data?.end_time ?? currentSlot?.end_time ?? null;
   const appointmentStatus = (apptQ.data?.appointment_status ?? "").toLowerCase();
   const isCancelled = appointmentStatus === "cancelled" || appointmentStatus === "canceled";
   const isPastAppointment = currentDate && currentEndTime ? localDateTimeMs(currentDate, currentEndTime) < Date.now() : false;
-  const canReschedule = !!apptQ.data && !isCancelled && !isPastAppointment;
+  const eligibility = apptQ.data
+    ? evaluateRescheduleEligibility({
+        appointmentStatus: apptQ.data.appointment_status,
+        startDate: currentDate,
+        startTime: currentStartTime,
+      })
+    : { canReschedule: false as const, reason: "" };
+  const canReschedule = eligibility.canReschedule;
 
   const slotsQ = useQuery({
     queryKey: ["slots", doctorId, consultationTypeId],
@@ -81,31 +91,27 @@ function ReschedulePage() {
     return dates.find((d) => d.date === selectedDate)?.slots ?? [];
   }, [dates, selectedDate]);
 
-  const rescheduleMutation = useMutation({
+  const proceedMutation = useMutation({
     mutationFn: async () => {
       if (!newSlotId || !currentSlotId) throw new Error("Please pick a new time.");
       if (newSlotId === currentSlotId) throw new Error("Pick a different time slot.");
-      const { error: rpcErr } = await (supabase as any).rpc("reschedule_appointment", {
-        p_appointment_id: appointmentId,
-        p_new_slot_id: newSlotId,
+      if (!canReschedule) {
+        throw new Error(
+          "reason" in eligibility && eligibility.reason
+            ? eligibility.reason
+            : "This appointment can't be rescheduled.",
+        );
+      }
+    },
+    onSuccess: () => {
+      navigate({
+        to: "/reschedule-payment/$appointmentId",
+        params: { appointmentId },
+        search: { newSlotId: newSlotId! },
       });
-      if (rpcErr) throw rpcErr;
     },
-    onSuccess: async () => {
-      toast.success("Appointment rescheduled");
-      await queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] });
-      await queryClient.invalidateQueries({ queryKey: ["visits"] });
-      await queryClient.invalidateQueries({ queryKey: ["slots", doctorId, consultationTypeId] });
-      navigate({ to: "/appointments/$appointmentId", params: { appointmentId } });
-    },
-    onError: async (err: Error) => {
-      const msg = err.message || "";
-      const friendly = /unavail|already|taken|booked/i.test(msg)
-        ? "That slot was just taken. Please pick another time."
-        : msg || "Couldn't reschedule";
-      toast.error(friendly);
-      await queryClient.invalidateQueries({ queryKey: ["slots", doctorId, consultationTypeId] });
-      setNewSlotId(null);
+    onError: (err: Error) => {
+      toast.error(err.message);
     },
   });
 
@@ -148,7 +154,11 @@ function ReschedulePage() {
 
         {apptQ.data && !canReschedule && (
           <StateBox title="Rescheduling unavailable">
-            {isCancelled ? "Cancelled appointments can't be rescheduled." : "Past appointments can't be rescheduled."}
+            {"reason" in eligibility && eligibility.reason
+              ? eligibility.reason
+              : isCancelled
+              ? "Cancelled appointments can't be rescheduled."
+              : "Past appointments can't be rescheduled."}
           </StateBox>
         )}
 
@@ -226,12 +236,15 @@ function ReschedulePage() {
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
       >
         <div className="mx-auto max-w-2xl">
+          <p className="mb-2 text-center text-[11px] text-muted-foreground">
+            A ₹{RESCHEDULE_FEE_INR} reschedule fee applies. Your original time is held until payment succeeds.
+          </p>
           <Button
             className="h-12 w-full rounded-xl text-base"
-            disabled={!canReschedule || !newSlotId || rescheduleMutation.isPending}
-            onClick={() => rescheduleMutation.mutate()}
+            disabled={!canReschedule || !newSlotId || proceedMutation.isPending}
+            onClick={() => proceedMutation.mutate()}
           >
-            {rescheduleMutation.isPending ? "Rescheduling…" : "Confirm new time"}
+            {proceedMutation.isPending ? "Continuing…" : `Continue to pay ₹${RESCHEDULE_FEE_INR}`}
           </Button>
         </div>
       </div>
