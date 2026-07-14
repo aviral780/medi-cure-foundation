@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { CANCEL_CUTOFF_MESSAGE, evaluateCancelEligibility, fetchAppointmentById } from "@/lib/booking-queries";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,14 +31,38 @@ export function CancelAppointmentDialog({
 
   const mutation = useMutation({
     mutationFn: async () => {
+      // Re-validate the 6-hour + status rule server-side-of-truth (fresh row).
+      const fresh = await fetchAppointmentById(appointmentId);
+      if (!fresh) throw new Error("Appointment not found.");
+      const eligibility = evaluateCancelEligibility({
+        appointmentStatus: fresh.appointment_status,
+        startDate: fresh.appointment_date ?? fresh.availability_slots?.slot_date ?? null,
+        startTime: fresh.start_time ?? fresh.availability_slots?.start_time ?? null,
+      });
+      if (!eligibility.canCancel) throw new Error(eligibility.reason);
+
       const { error } = await (supabase as any).rpc("cancel_appointment", {
         p_appointment_id: appointmentId,
         p_cancellation_reason: reason.trim() || null,
       });
       if (error) throw error;
+      return fresh;
     },
-    onSuccess: async () => {
+    onSuccess: async (fresh) => {
       toast.success("Appointment cancelled");
+      // Best-effort cancellation confirmation email. Silently no-ops if the
+      // email endpoint isn't configured yet — never blocks the cancellation.
+      try {
+        await fetch("/api/public/notifications/appointment-cancelled", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ appointment_id: appointmentId }),
+          keepalive: true,
+        });
+      } catch {
+        // ignore — user already sees success, RPC has released the slot
+      }
+      void fresh;
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] }),
         queryClient.invalidateQueries({ queryKey: ["visits"] }),
@@ -47,7 +72,11 @@ export function CancelAppointmentDialog({
       setReason("");
       onCancelled?.();
     },
-    onError: (err: Error) => toast.error(err.message || "Couldn't cancel appointment"),
+    onError: (err: Error) => {
+      const msg = err.message || "Couldn't cancel appointment";
+      // Surface the 6-hour rule verbatim if the server rejected it.
+      toast.error(/6 hours/i.test(msg) ? CANCEL_CUTOFF_MESSAGE : msg);
+    },
   });
 
   return (

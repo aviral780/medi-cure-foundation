@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import {
   fetchAppointmentById,
+  evaluateCancelEligibility,
   formatFee,
   formatFullDate,
   formatMode,
@@ -46,6 +47,13 @@ function AppointmentDetailsPage() {
   const paymentPending = (data?.payment_status ?? "").toLowerCase() === "pending" && !isCancelled && !isPast;
   const isPaid = (data?.payment_status ?? "").toLowerCase() === "paid";
   const canModify = !!data && !isPast && !isCancelled;
+  const cancelEligibility = data
+    ? evaluateCancelEligibility({
+        appointmentStatus: data.appointment_status,
+        startDate: scheduleDate,
+        startTime: scheduleStartTime,
+      })
+    : { canCancel: false, reason: "" };
 
   return (
     <AppShell>
@@ -190,22 +198,30 @@ function AppointmentDetailsPage() {
 
             {/* Actions */}
             {canModify ? (
-              <div className="mt-6 grid gap-2 sm:grid-cols-2">
-                <Button asChild variant="outline" className="h-12 rounded-xl">
-                  <Link
-                    to="/appointments/$appointmentId/reschedule"
-                    params={{ appointmentId }}
+              <div className="mt-6 space-y-2">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button asChild variant="outline" className="h-12 rounded-xl">
+                    <Link
+                      to="/appointments/$appointmentId/reschedule"
+                      params={{ appointmentId }}
+                    >
+                      <CalendarClock className="mr-2 h-4 w-4" aria-hidden /> Reschedule
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="h-12 rounded-xl"
+                    onClick={() => setConfirmOpen(true)}
+                    disabled={!cancelEligibility.canCancel}
                   >
-                    <CalendarClock className="mr-2 h-4 w-4" aria-hidden /> Reschedule
-                  </Link>
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="h-12 rounded-xl"
-                  onClick={() => setConfirmOpen(true)}
-                >
-                  <X className="mr-2 h-4 w-4" aria-hidden /> Cancel appointment
-                </Button>
+                    <X className="mr-2 h-4 w-4" aria-hidden /> Cancel appointment
+                  </Button>
+                </div>
+                {!cancelEligibility.canCancel && "reason" in cancelEligibility && cancelEligibility.reason && (
+                  <p className="rounded-xl border border-dashed border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                    {cancelEligibility.reason}
+                  </p>
+                )}
               </div>
             ) : (
               <p className="mt-6 rounded-2xl border border-dashed border-border bg-card p-4 text-center text-xs text-muted-foreground">

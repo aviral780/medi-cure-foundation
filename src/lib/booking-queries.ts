@@ -237,3 +237,40 @@ export function isSlotExpired(slot: { slot_date: string; end_time: string }): bo
 export function isSlotStartInPast(slot: { slot_date: string; start_time: string }): boolean {
   return localDateTime(slot.slot_date, slot.start_time) < Date.now();
 }
+
+export const CANCEL_CUTOFF_HOURS = 6;
+export const CANCEL_CUTOFF_MESSAGE =
+  "Appointments cannot be cancelled within 6 hours of the scheduled time.";
+
+export type CancelEligibility =
+  | { canCancel: true }
+  | { canCancel: false; reason: string };
+
+export function evaluateCancelEligibility(params: {
+  appointmentStatus: string | null | undefined;
+  startDate: string | null | undefined;
+  startTime: string | null | undefined;
+}): CancelEligibility {
+  const status = (params.appointmentStatus ?? "").toLowerCase();
+  if (status === "cancelled" || status === "canceled") {
+    return { canCancel: false, reason: "This appointment has already been cancelled." };
+  }
+  if (status === "completed") {
+    return { canCancel: false, reason: "Completed appointments cannot be cancelled." };
+  }
+  if (status !== "confirmed") {
+    return { canCancel: false, reason: "Only confirmed appointments can be cancelled." };
+  }
+  if (!params.startDate || !params.startTime) {
+    return { canCancel: false, reason: "Missing schedule information." };
+  }
+  const startMs = localDateTime(params.startDate, params.startTime);
+  const hoursUntil = (startMs - Date.now()) / 3_600_000;
+  if (hoursUntil <= 0) {
+    return { canCancel: false, reason: "This appointment has already started." };
+  }
+  if (hoursUntil < CANCEL_CUTOFF_HOURS) {
+    return { canCancel: false, reason: CANCEL_CUTOFF_MESSAGE };
+  }
+  return { canCancel: true };
+}
