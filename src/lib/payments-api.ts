@@ -113,3 +113,43 @@ export async function fetchLatestPaymentForAppointment(appointmentId: string): P
   if (error) throw error;
   return ((data as PaymentRow[] | null)?.[0]) ?? null;
 }
+
+// --- Reschedule payment (mandatory ₹100 fee) ---
+
+export type CreateRescheduleOrderResponse = CreateOrderResponse & {
+  previous: { date: string | null; startTime: string | null; endTime: string | null };
+  newSlot: { date: string; startTime: string; endTime: string };
+};
+
+export async function createRescheduleOrder(input: {
+  appointmentId: string;
+  newSlotId: string;
+}): Promise<CreateRescheduleOrderResponse> {
+  const token = await bearer();
+  const res = await fetch("/api/public/reschedule/create-order", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json?.error || "Could not start reschedule payment");
+  return json as CreateRescheduleOrderResponse;
+}
+
+export async function verifyReschedulePayment(input: {
+  appointmentId: string;
+  newSlotId: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}): Promise<VerifyResponse> {
+  const token = await bearer();
+  const res = await fetch("/api/public/reschedule/verify", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json?.error || "Reschedule verification failed");
+  return json as VerifyResponse;
+}
