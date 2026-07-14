@@ -50,6 +50,44 @@ export async function createRazorpayOrder(appointmentId: string): Promise<Create
 
 export type VerifyResponse = { ok: true; paymentMethod: string | null; paymentId: string };
 
+export type CreateRescheduleOrderResponse = CreateOrderResponse & {
+  previous: { date: string; startTime: string; endTime: string };
+  newSlot: { date: string; startTime: string; endTime: string };
+};
+
+export async function createRescheduleOrder(input: {
+  appointmentId: string;
+  newSlotId: string;
+}): Promise<CreateRescheduleOrderResponse> {
+  const token = await bearer();
+  const res = await fetch("/api/public/reschedule/create-order", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json?.error || "Could not create reschedule order");
+  return json as CreateRescheduleOrderResponse;
+}
+
+export async function verifyReschedulePayment(input: {
+  appointmentId: string;
+  newSlotId: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}): Promise<VerifyResponse> {
+  const token = await bearer();
+  const res = await fetch("/api/public/reschedule/verify", {
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+    body: JSON.stringify(input),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json?.error || "Reschedule payment verification failed");
+  return json as VerifyResponse;
+}
+
 export async function verifyRazorpayPayment(input: {
   appointmentId: string;
   razorpay_order_id: string;
