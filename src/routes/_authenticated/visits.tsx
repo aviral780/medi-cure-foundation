@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { formatMode, formatTime, formatFullDate } from "@/lib/booking-queries";
+import { evaluateCancelEligibility } from "@/lib/booking-queries";
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
 import { cn } from "@/lib/utils";
@@ -152,6 +153,11 @@ function VisitCard({
   const date = visit.appointment_date ?? slot?.slot_date ?? null;
   const startTime = visit.start_time ?? slot?.start_time ?? null;
   const endTime = visit.end_time ?? slot?.end_time ?? null;
+  const cancelEligibility = evaluateCancelEligibility({
+    appointmentStatus: visit.appointment_status,
+    startDate: date,
+    startTime,
+  });
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)] transition-colors hover:border-primary/40">
       <Link
@@ -192,26 +198,33 @@ function VisitCard({
         </div>
       </Link>
       {showActions && (
-        <div className="mt-4 grid grid-cols-2 gap-2 border-t border-border/60 pt-3">
-          <Link
-            to="/appointments/$appointmentId/reschedule"
-            params={{ appointmentId: visit.id }}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-10 rounded-lg")}
-          >
-            <CalendarClock className="mr-1.5 h-4 w-4" aria-hidden /> Reschedule
-          </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-10 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              onCancel?.(visit.id);
-            }}
-          >
-            <X className="mr-1.5 h-4 w-4" aria-hidden /> Cancel
-          </Button>
+        <div className="mt-4 space-y-2 border-t border-border/60 pt-3">
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              to="/appointments/$appointmentId/reschedule"
+              params={{ appointmentId: visit.id }}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-10 rounded-lg")}
+            >
+              <CalendarClock className="mr-1.5 h-4 w-4" aria-hidden /> Reschedule
+            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-10 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+              disabled={!cancelEligibility.canCancel}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (!cancelEligibility.canCancel) return;
+                onCancel?.(visit.id);
+              }}
+            >
+              <X className="mr-1.5 h-4 w-4" aria-hidden /> Cancel
+            </Button>
+          </div>
+          {!cancelEligibility.canCancel && "reason" in cancelEligibility && cancelEligibility.reason && (
+            <p className="text-[11px] leading-snug text-muted-foreground">{cancelEligibility.reason}</p>
+          )}
         </div>
       )}
     </div>
