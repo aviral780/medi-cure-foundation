@@ -13,6 +13,7 @@ import {
   formatTime,
 } from "@/lib/booking-queries";
 import { loadRazorpay } from "@/lib/razorpay-loader";
+import { supabase } from "@/lib/supabase";
 import {
   createRazorpayOrder,
   markPaymentFailed,
@@ -85,6 +86,24 @@ function PaymentPage() {
             await queryClient.invalidateQueries({ queryKey: ["visits"] });
             setPhase("success");
             toast.success("Payment successful");
+            // Fire-and-forget booking confirmation email — only after payment
+            // is verified and the appointment is fully confirmed.
+            void (async () => {
+              try {
+                const { data: sess } = await supabase.auth.getSession();
+                const token = sess?.session?.access_token;
+                await fetch("/api/public/notifications/appointment-confirmed", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                  },
+                  body: JSON.stringify({ appointment_id: appointmentId }),
+                });
+              } catch {
+                /* ignore */
+              }
+            })();
           } catch (err) {
             setPhase("failed");
             setErrorMsg(err instanceof Error ? err.message : "Verification failed");
