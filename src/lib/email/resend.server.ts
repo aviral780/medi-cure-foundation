@@ -3,6 +3,38 @@
 
 export const DEFAULT_FROM = "Resend <onboarding@resend.dev>";
 
+// Read RESEND_API_KEY from every runtime shape this app can encounter.
+//
+// On the modern TanStack Start stack we execute in two different runtimes:
+//   1. Vite dev SSR (Node) — secrets are on `process.env` inherited from the
+//      sandbox OS environment.
+//   2. Cloudflare Workers (published + preview) — Cloud Secrets are bound onto
+//      the per-request `env` object; nodejs_compat mirrors them onto
+//      `process.env`, but only after Nitro's request hook copies them in.
+//      Anything read at module scope is empty, and depending on bundling
+//      order a handler-time `process.env.X` lookup can still miss.
+//
+// We therefore probe process.env, globalThis.process.env, and any Nitro-exposed
+// Cloudflare env binding, in that order, so the key resolves in every runtime
+// where a Cloud Secret named RESEND_API_KEY is available.
+function readResendApiKey(): string | undefined {
+  const g = globalThis as unknown as {
+    process?: { env?: Record<string, string | undefined> };
+    __env__?: Record<string, string | undefined>;
+  };
+  const fromProcess =
+    (typeof process !== "undefined" && process.env && process.env.RESEND_API_KEY) ||
+    g.process?.env?.RESEND_API_KEY;
+  if (fromProcess) return fromProcess;
+
+  // Nitro exposes the Cloudflare per-request env under a few well-known names
+  // depending on preset version. Check them defensively.
+  const nitroEnv = g.__env__?.RESEND_API_KEY;
+  if (nitroEnv) return nitroEnv;
+
+  return undefined;
+}
+
 export type SendEmailInput = {
   to: string | string[];
   subject: string;
