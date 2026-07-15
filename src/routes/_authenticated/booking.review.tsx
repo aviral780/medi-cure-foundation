@@ -53,6 +53,12 @@ function BookingReviewPage() {
     },
     onSuccess: (id) => {
       setConfirmed(id);
+      // Fire-and-forget booking confirmation email. Never blocks the UI.
+      void fetch("/api/public/notifications/appointment-confirmed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appointment_id: id }),
+      }).catch(() => {});
       const fee = Number(typeQ.data?.fee ?? 0);
       if (fee > 0) {
         navigate({ to: "/payment/$appointmentId", params: { appointmentId: id } });
