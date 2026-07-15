@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sendEmail } from "@/lib/email/resend.server";
 import { renderBookingConfirmationEmail } from "@/lib/email/templates/booking-confirmation";
+import { supabaseWithUserToken, requireUserId } from "@/lib/razorpay.server";
 
 // Best-effort booking confirmation email. Never fails the booking flow.
 export const Route = createFileRoute("/api/public/notifications/appointment-confirmed")({
@@ -18,18 +19,14 @@ export const Route = createFileRoute("/api/public/notifications/appointment-conf
           return new Response("appointment_id required", { status: 400 });
         }
 
-        const supabaseUrl = process.env.SUPABASE_URL;
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (!supabaseUrl || !serviceKey) {
-          return Response.json({ ok: true, sent: false, reason: "backend_not_configured" });
-        }
-
         try {
-          const { createClient } = await import("@supabase/supabase-js");
-          const admin = createClient(supabaseUrl, serviceKey, {
-            auth: { persistSession: false },
-          });
-          const { data: appt, error } = await admin
+          // Authenticate the caller against the external Supabase project (RLS applies).
+          const { token } = await requireUserId(request).catch(() => ({ token: "" }));
+          if (!token) {
+            return Response.json({ ok: true, sent: false, reason: "no_session" });
+          }
+          const db = supabaseWithUserToken(token);
+          const { data: appt, error } = await db
             .from("appointments")
             .select(
               "id, appointment_date, start_time, end_time, patient_id, doctors(full_name), consultation_types(name, mode, fee, currency)",
@@ -40,9 +37,7 @@ export const Route = createFileRoute("/api/public/notifications/appointment-conf
             return Response.json({ ok: true, sent: false, reason: "appointment_not_found" });
           }
 
-          const { data: userRes } = await admin.auth.admin.getUserById(
-            (appt as any).patient_id,
-          );
+          const { data: userRes } = await db.auth.getUser(token);
           const email = userRes?.user?.email;
           if (!email) {
             return Response.json({ ok: true, sent: false, reason: "no_recipient" });

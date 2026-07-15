@@ -54,11 +54,22 @@ function BookingReviewPage() {
     onSuccess: (id) => {
       setConfirmed(id);
       // Fire-and-forget booking confirmation email. Never blocks the UI.
-      void fetch("/api/public/notifications/appointment-confirmed", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appointment_id: id }),
-      }).catch(() => {});
+      void (async () => {
+        try {
+          const { data: sess } = await supabase.auth.getSession();
+          const token = sess?.session?.access_token;
+          await fetch("/api/public/notifications/appointment-confirmed", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ appointment_id: id }),
+          });
+        } catch {
+          /* ignore */
+        }
+      })();
       const fee = Number(typeQ.data?.fee ?? 0);
       if (fee > 0) {
         navigate({ to: "/payment/$appointmentId", params: { appointmentId: id } });
