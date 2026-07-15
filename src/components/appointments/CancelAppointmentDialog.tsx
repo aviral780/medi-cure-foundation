@@ -46,17 +46,22 @@ export function CancelAppointmentDialog({
         p_cancellation_reason: reason.trim() || null,
       });
       if (error) throw error;
-      return fresh;
+      return { fresh, reason: reason.trim() || null };
     },
-    onSuccess: async (fresh) => {
+    onSuccess: async ({ fresh, reason: cancelReason }) => {
       toast.success("Appointment cancelled");
       // Best-effort cancellation confirmation email. Silently no-ops if the
       // email endpoint isn't configured yet — never blocks the cancellation.
       try {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess?.session?.access_token;
         await fetch("/api/public/notifications/appointment-cancelled", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ appointment_id: appointmentId }),
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ appointment_id: appointmentId, reason: cancelReason }),
           keepalive: true,
         });
       } catch {

@@ -109,20 +109,32 @@ function ReschedulePaymentPage() {
               razorpay_signature: r.razorpay_signature,
             });
             // Best-effort confirmation email with previous vs new times + fee.
-            void fetch("/api/public/notifications/appointment-rescheduled", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                appointment_id: appointmentId,
-                previous: {
-                  date: order.previous.date,
-                  start_time: order.previous.startTime,
-                  end_time: order.previous.endTime,
-                },
-                fee_inr: RESCHEDULE_FEE_INR,
-              }),
-              keepalive: true,
-            }).catch(() => {});
+            void (async () => {
+              try {
+                const { supabase } = await import("@/lib/supabase");
+                const { data: sess } = await supabase.auth.getSession();
+                const bearer = sess?.session?.access_token;
+                await fetch("/api/public/notifications/appointment-rescheduled", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+                  },
+                  body: JSON.stringify({
+                    appointment_id: appointmentId,
+                    previous: {
+                      date: order.previous.date,
+                      start_time: order.previous.startTime,
+                      end_time: order.previous.endTime,
+                    },
+                    fee_inr: RESCHEDULE_FEE_INR,
+                  }),
+                  keepalive: true,
+                });
+              } catch {
+                /* ignore */
+              }
+            })();
             await Promise.all([
               queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] }),
               queryClient.invalidateQueries({ queryKey: ["visits"] }),
