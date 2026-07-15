@@ -16,7 +16,7 @@ export type SendEmailResult =
   | { ok: true; sent: false; reason: string; detail?: string };
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
-  const resendKey = process.env.RESEND_API_KEY;
+  const resendKey = readResendApiKey();
   if (!resendKey) {
     return { ok: true, sent: false, reason: "email_not_configured" };
   }
