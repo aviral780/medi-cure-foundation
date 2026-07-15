@@ -53,6 +53,12 @@ function BookingReviewPage() {
     },
     onSuccess: (id) => {
       setConfirmed(id);
+      const fee = Number(typeQ.data?.fee ?? 0);
+      if (fee > 0) {
+        navigate({ to: "/payment/$appointmentId", params: { appointmentId: id } });
+        return;
+      }
+      // No payment required — appointment is fully confirmed at creation time.
       // Fire-and-forget booking confirmation email. Never blocks the UI.
       void (async () => {
         try {
@@ -70,10 +76,6 @@ function BookingReviewPage() {
           /* ignore */
         }
       })();
-      const fee = Number(typeQ.data?.fee ?? 0);
-      if (fee > 0) {
-        navigate({ to: "/payment/$appointmentId", params: { appointmentId: id } });
-      }
     },
   });
 
