@@ -31,6 +31,7 @@ import { Route as ApiPublicPaymentsCreateOrderRouteImport } from './routes/api/p
 import { Route as ApiPublicNotificationsAppointmentRescheduledRouteImport } from './routes/api/public/notifications.appointment-rescheduled'
 import { Route as ApiPublicNotificationsAppointmentConfirmedRouteImport } from './routes/api/public/notifications.appointment-confirmed'
 import { Route as ApiPublicNotificationsAppointmentCancelledRouteImport } from './routes/api/public/notifications.appointment-cancelled'
+import { Route as ApiPublicAppointmentsReleasePendingRouteImport } from './routes/api/public/appointments.release-pending'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 import { Route as AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport } from './routes/_authenticated/appointments.$appointmentId.reschedule'
 
@@ -155,6 +156,12 @@ const ApiPublicNotificationsAppointmentCancelledRoute =
     path: '/api/public/notifications/appointment-cancelled',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAppointmentsReleasePendingRoute =
+  ApiPublicAppointmentsReleasePendingRouteImport.update({
+    id: '/api/public/appointments/release-pending',
+    path: '/api/public/appointments/release-pending',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedDoctorsDoctorIdBookRoute =
   AuthenticatedDoctorsDoctorIdBookRouteImport.update({
     id: '/doctors/$doctorId/book',
@@ -183,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
+  '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
   '/api/public/notifications/appointment-confirmed': typeof ApiPublicNotificationsAppointmentConfirmedRoute
   '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -208,6 +216,7 @@ export interface FileRoutesByTo {
   '/doctors/$doctorId': typeof DoctorsDoctorIdIndexRoute
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
+  '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
   '/api/public/notifications/appointment-confirmed': typeof ApiPublicNotificationsAppointmentConfirmedRoute
   '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -235,6 +244,7 @@ export interface FileRoutesById {
   '/doctors/$doctorId/': typeof DoctorsDoctorIdIndexRoute
   '/_authenticated/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
+  '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
   '/api/public/notifications/appointment-confirmed': typeof ApiPublicNotificationsAppointmentConfirmedRoute
   '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -262,6 +272,7 @@ export interface FileRouteTypes {
     | '/doctors/$doctorId/'
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
+    | '/api/public/appointments/release-pending'
     | '/api/public/notifications/appointment-cancelled'
     | '/api/public/notifications/appointment-confirmed'
     | '/api/public/notifications/appointment-rescheduled'
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/doctors/$doctorId'
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
+    | '/api/public/appointments/release-pending'
     | '/api/public/notifications/appointment-cancelled'
     | '/api/public/notifications/appointment-confirmed'
     | '/api/public/notifications/appointment-rescheduled'
@@ -313,6 +325,7 @@ export interface FileRouteTypes {
     | '/doctors/$doctorId/'
     | '/_authenticated/appointments/$appointmentId/reschedule'
     | '/_authenticated/doctors/$doctorId/book'
+    | '/api/public/appointments/release-pending'
     | '/api/public/notifications/appointment-cancelled'
     | '/api/public/notifications/appointment-confirmed'
     | '/api/public/notifications/appointment-rescheduled'
@@ -331,6 +344,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   DoctorsIndexRoute: typeof DoctorsIndexRoute
   DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
+  ApiPublicAppointmentsReleasePendingRoute: typeof ApiPublicAppointmentsReleasePendingRoute
   ApiPublicNotificationsAppointmentCancelledRoute: typeof ApiPublicNotificationsAppointmentCancelledRoute
   ApiPublicNotificationsAppointmentConfirmedRoute: typeof ApiPublicNotificationsAppointmentConfirmedRoute
   ApiPublicNotificationsAppointmentRescheduledRoute: typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -497,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNotificationsAppointmentCancelledRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/appointments/release-pending': {
+      id: '/api/public/appointments/release-pending'
+      path: '/api/public/appointments/release-pending'
+      fullPath: '/api/public/appointments/release-pending'
+      preLoaderRoute: typeof ApiPublicAppointmentsReleasePendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/doctors/$doctorId/book': {
       id: '/_authenticated/doctors/$doctorId/book'
       path: '/doctors/$doctorId/book'
@@ -555,6 +576,8 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   DoctorsIndexRoute: DoctorsIndexRoute,
   DoctorsDoctorIdIndexRoute: DoctorsDoctorIdIndexRoute,
+  ApiPublicAppointmentsReleasePendingRoute:
+    ApiPublicAppointmentsReleasePendingRoute,
   ApiPublicNotificationsAppointmentCancelledRoute:
     ApiPublicNotificationsAppointmentCancelledRoute,
   ApiPublicNotificationsAppointmentConfirmedRoute:
