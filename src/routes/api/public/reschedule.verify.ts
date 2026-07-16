@@ -80,6 +80,13 @@ export const Route = createFileRoute("/api/public/reschedule/verify")({
             .eq("id", (paymentRow as any).id);
           if (updErr) return jsonError(500, `Could not update payment: ${updErr.message}`);
 
+          // Free stale (cancelled/completed/rescheduled) references to the
+          // target slot so the reschedule swap doesn't hit a UNIQUE
+          // (availability_slot_id) violation on public.appointments.
+          await supabase.rpc("free_stale_slot_reservations", {
+            p_slot_id: body.newSlotId,
+          });
+
           // Perform the reschedule — existing RPC releases the old slot and
           // reserves the new one atomically. If it fails (e.g. slot just taken),
           // the ₹100 fee stays recorded as paid so the user can retry with a

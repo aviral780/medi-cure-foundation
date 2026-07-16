@@ -80,6 +80,22 @@ export async function markPaymentFailed(input: {
   }).catch(() => {});
 }
 
+export async function releasePendingAppointment(appointmentId: string): Promise<void> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return;
+    await fetch("/api/public/appointments/release-pending", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+      body: JSON.stringify({ appointmentId }),
+      keepalive: true,
+    });
+  } catch {
+    /* ignore — abandonment cleanup is best-effort */
+  }
+}
+
 export async function fetchPaymentHistory(): Promise<
   Array<
     PaymentRow & {
