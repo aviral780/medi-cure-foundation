@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Loader2, MapPin, ShieldCheck, User, Video } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -17,6 +17,7 @@ import { supabase } from "@/lib/supabase";
 import {
   createRazorpayOrder,
   markPaymentFailed,
+  releasePendingAppointment,
   verifyRazorpayPayment,
 } from "@/lib/payments-api";
 
@@ -32,6 +33,8 @@ function PaymentPage() {
   const queryClient = useQueryClient();
   const [phase, setPhase] = useState<Phase>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const paidRef = useRef(false);
+  const releasedRef = useRef(false);
 
   const { data: appt, isLoading, error } = useQuery({
     queryKey: ["appointment", appointmentId],
@@ -48,6 +51,27 @@ function PaymentPage() {
   const currency = type?.currency ?? "INR";
   const alreadyPaid = appt?.payment_status === "paid";
   const busy = phase === "creating" || phase === "checkout" || phase === "verifying";
+
+  useEffect(() => {
+    paidRef.current = alreadyPaid || phase === "success";
+  }, [alreadyPaid, phase]);
+
+  // Release the reserved slot if the patient abandons the payment step
+  // (closes the tab, navigates away, or refreshes) without completing payment.
+  useEffect(() => {
+    const release = () => {
+      if (paidRef.current || releasedRef.current) return;
+      releasedRef.current = true;
+      void releasePendingAppointment(appointmentId);
+    };
+    window.addEventListener("beforeunload", release);
+    window.addEventListener("pagehide", release);
+    return () => {
+      window.removeEventListener("beforeunload", release);
+      window.removeEventListener("pagehide", release);
+      release();
+    };
+  }, [appointmentId]);
 
   async function handlePay() {
     if (busy || !type || !appt) return;
@@ -82,6 +106,7 @@ function PaymentPage() {
               razorpay_payment_id: r.razorpay_payment_id,
               razorpay_signature: r.razorpay_signature,
             });
+            paidRef.current = true;
             await queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] });
             await queryClient.invalidateQueries({ queryKey: ["visits"] });
             setPhase("success");
@@ -118,6 +143,9 @@ function PaymentPage() {
               razorpay_order_id: order.orderId,
               reason: "User dismissed checkout",
             });
+            await releasePendingAppointment(appointmentId);
+            releasedRef.current = true;
+            await queryClient.invalidateQueries({ queryKey: ["slots"] });
           },
         },
       });
@@ -130,6 +158,9 @@ function PaymentPage() {
           razorpay_order_id: order.orderId,
           reason,
         });
+        await releasePendingAppointment(appointmentId);
+        releasedRef.current = true;
+        await queryClient.invalidateQueries({ queryKey: ["slots"] });
       });
       rzp.open();
     } catch (err) {
@@ -239,7 +270,12 @@ function PaymentPage() {
                 variant="outline"
                 className="h-12 rounded-xl"
                 disabled={busy}
-                onClick={() => navigate({ to: "/appointments/$appointmentId", params: { appointmentId } })}
+                onClick={async () => {
+                  await releasePendingAppointment(appointmentId);
+                  releasedRef.current = true;
+                  await queryClient.invalidateQueries({ queryKey: ["slots"] });
+                  navigate({ to: "/appointments/$appointmentId", params: { appointmentId } });
+                }}
               >
                 Cancel payment
               </Button>
