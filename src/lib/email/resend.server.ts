@@ -41,7 +41,6 @@ export type SendEmailInput = {
   html: string;
   from?: string;
   replyTo?: string;
-  attachments?: Array<{ filename: string; content: string; contentType?: string }>;
 };
 
 export type SendEmailResult =
@@ -70,9 +69,6 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         subject: input.subject,
         html: input.html,
         ...(input.replyTo ? { reply_to: input.replyTo } : {}),
-        ...(input.attachments && input.attachments.length > 0
-          ? { attachments: input.attachments }
-          : {}),
       }),
     });
     if (!res.ok) {
