@@ -40,8 +40,31 @@ function AuthPage() {
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/account", replace: true });
+    if (!loading && user) {
+      void routeAfterLogin(user.id, navigate);
+    }
   }, [loading, user, navigate]);
+
+  async function routeAfterLogin(
+    userId: string,
+    nav: ReturnType<typeof useNavigate>,
+  ) {
+    try {
+      const { data } = await supabase
+        .from("admins" as never)
+        .select("id")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (data) {
+        nav({ to: "/admin", replace: true });
+        return;
+      }
+    } catch {
+      // fall through to patient home
+    }
+    nav({ to: "/account", replace: true });
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,13 +102,17 @@ function AuthPage() {
 
         toast.success("Account created.");
         router.invalidate();
-        navigate({ to: "/account", replace: true });
+        await routeAfterLogin(data.session.user.id, navigate);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
         toast.success("Welcome back!");
         router.invalidate();
-        navigate({ to: "/account", replace: true });
+        if (signInData.user) {
+          await routeAfterLogin(signInData.user.id, navigate);
+        } else {
+          navigate({ to: "/account", replace: true });
+        }
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
