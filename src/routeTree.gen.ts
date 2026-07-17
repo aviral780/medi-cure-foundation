@@ -11,9 +11,19 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DoctorsIndexRouteImport } from './routes/doctors.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminScheduleRouteImport } from './routes/admin.schedule'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminPatientsRouteImport } from './routes/admin.patients'
+import { Route as AdminDoctorsRouteImport } from './routes/admin.doctors'
+import { Route as AdminConsultationTypesRouteImport } from './routes/admin.consultation-types'
+import { Route as AdminAppointmentsRouteImport } from './routes/admin.appointments'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -45,6 +55,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -58,6 +73,51 @@ const DoctorsIndexRoute = DoctorsIndexRouteImport.update({
   id: '/doctors/',
   path: '/doctors/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminScheduleRoute = AdminScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPatientsRoute = AdminPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDoctorsRoute = AdminDoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConsultationTypesRoute = AdminConsultationTypesRouteImport.update({
+  id: '/consultation-types',
+  path: '/consultation-types',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAppointmentsRoute = AdminAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
   id: '/visits',
@@ -177,11 +237,21 @@ const AuthenticatedAppointmentsAppointmentIdRescheduleRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/how-it-works': typeof HowItWorksRoute
   '/account': typeof AuthenticatedAccountRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/consultation-types': typeof AdminConsultationTypesRoute
+  '/admin/doctors': typeof AdminDoctorsRoute
+  '/admin/patients': typeof AdminPatientsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/schedule': typeof AdminScheduleRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/': typeof AdminIndexRoute
   '/doctors/': typeof DoctorsIndexRoute
   '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
@@ -208,6 +278,15 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/consultation-types': typeof AdminConsultationTypesRoute
+  '/admin/doctors': typeof AdminDoctorsRoute
+  '/admin/patients': typeof AdminPatientsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/schedule': typeof AdminScheduleRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin': typeof AdminIndexRoute
   '/doctors': typeof DoctorsIndexRoute
   '/booking/review': typeof AuthenticatedBookingReviewRoute
   '/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
@@ -231,11 +310,21 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/how-it-works': typeof HowItWorksRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRoute
+  '/admin/appointments': typeof AdminAppointmentsRoute
+  '/admin/consultation-types': typeof AdminConsultationTypesRoute
+  '/admin/doctors': typeof AdminDoctorsRoute
+  '/admin/patients': typeof AdminPatientsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/schedule': typeof AdminScheduleRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/': typeof AdminIndexRoute
   '/doctors/': typeof DoctorsIndexRoute
   '/_authenticated/booking/review': typeof AuthenticatedBookingReviewRoute
   '/_authenticated/payment/$appointmentId': typeof AuthenticatedPaymentAppointmentIdRoute
@@ -259,11 +348,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/how-it-works'
     | '/account'
     | '/payments'
     | '/visits'
+    | '/admin/appointments'
+    | '/admin/consultation-types'
+    | '/admin/doctors'
+    | '/admin/patients'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/schedule'
+    | '/admin/settings'
+    | '/admin/'
     | '/doctors/'
     | '/booking/review'
     | '/payment/$appointmentId'
@@ -290,6 +389,15 @@ export interface FileRouteTypes {
     | '/account'
     | '/payments'
     | '/visits'
+    | '/admin/appointments'
+    | '/admin/consultation-types'
+    | '/admin/doctors'
+    | '/admin/patients'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/schedule'
+    | '/admin/settings'
+    | '/admin'
     | '/doctors'
     | '/booking/review'
     | '/payment/$appointmentId'
@@ -312,11 +420,21 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin'
     | '/auth'
     | '/how-it-works'
     | '/_authenticated/account'
     | '/_authenticated/payments'
     | '/_authenticated/visits'
+    | '/admin/appointments'
+    | '/admin/consultation-types'
+    | '/admin/doctors'
+    | '/admin/patients'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/schedule'
+    | '/admin/settings'
+    | '/admin/'
     | '/doctors/'
     | '/_authenticated/booking/review'
     | '/_authenticated/payment/$appointmentId'
@@ -340,6 +458,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   HowItWorksRoute: typeof HowItWorksRoute
   DoctorsIndexRoute: typeof DoctorsIndexRoute
@@ -371,6 +490,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -391,6 +517,69 @@ declare module '@tanstack/react-router' {
       fullPath: '/doctors/'
       preLoaderRoute: typeof DoctorsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/schedule': {
+      id: '/admin/schedule'
+      path: '/schedule'
+      fullPath: '/admin/schedule'
+      preLoaderRoute: typeof AdminScheduleRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/patients': {
+      id: '/admin/patients'
+      path: '/patients'
+      fullPath: '/admin/patients'
+      preLoaderRoute: typeof AdminPatientsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/doctors': {
+      id: '/admin/doctors'
+      path: '/doctors'
+      fullPath: '/admin/doctors'
+      preLoaderRoute: typeof AdminDoctorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/consultation-types': {
+      id: '/admin/consultation-types'
+      path: '/consultation-types'
+      fullPath: '/admin/consultation-types'
+      preLoaderRoute: typeof AdminConsultationTypesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/appointments': {
+      id: '/admin/appointments'
+      path: '/appointments'
+      fullPath: '/admin/appointments'
+      preLoaderRoute: typeof AdminAppointmentsRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/_authenticated/visits': {
       id: '/_authenticated/visits'
@@ -569,9 +758,36 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AdminRouteChildren {
+  AdminAppointmentsRoute: typeof AdminAppointmentsRoute
+  AdminConsultationTypesRoute: typeof AdminConsultationTypesRoute
+  AdminDoctorsRoute: typeof AdminDoctorsRoute
+  AdminPatientsRoute: typeof AdminPatientsRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminScheduleRoute: typeof AdminScheduleRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAppointmentsRoute: AdminAppointmentsRoute,
+  AdminConsultationTypesRoute: AdminConsultationTypesRoute,
+  AdminDoctorsRoute: AdminDoctorsRoute,
+  AdminPatientsRoute: AdminPatientsRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminScheduleRoute: AdminScheduleRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   HowItWorksRoute: HowItWorksRoute,
   DoctorsIndexRoute: DoctorsIndexRoute,
