@@ -9,11 +9,13 @@ export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
-    const meta = (data.user.app_metadata ?? {}) as { role?: string; roles?: string[] };
-    const userMeta = (data.user.user_metadata ?? {}) as { role?: string };
-    const role = meta.role ?? userMeta.role;
-    const isAdmin = role === "admin" || (Array.isArray(meta.roles) && meta.roles.includes("admin"));
-    if (!isAdmin) throw redirect({ to: "/" });
+    const { data: admin } = await supabase
+      .from("admins" as never)
+      .select("id, is_active")
+      .eq("user_id", data.user.id)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (!admin) throw redirect({ to: "/" });
     return { user: data.user };
   },
   component: AdminLayout,
