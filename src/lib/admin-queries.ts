@@ -144,14 +144,13 @@ export type RecentAppointment = {
   payment_status: string | null;
   doctors: { full_name: string; specialization: string } | null;
   consultation_types: { name: string; mode: string; fee: number; currency: string } | null;
-  profiles: { full_name: string | null } | null;
 };
 
 export async function fetchRecentAppointments(limit = 10): Promise<RecentAppointment[]> {
   const { data, error } = await db
     .from("appointments")
     .select(
-      "id, created_at, appointment_date, start_time, appointment_status, payment_status, doctors(full_name, specialization), consultation_types(name, mode, fee, currency), profiles(full_name)",
+      "id, created_at, appointment_date, start_time, appointment_status, payment_status, doctors(full_name, specialization), consultation_types(name, mode, fee, currency)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
