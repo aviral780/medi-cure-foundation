@@ -56,9 +56,18 @@ export async function fetchAdminStats(): Promise<AdminStats> {
     revenueTotalRes,
   ] = await Promise.all([
     db.from("profiles").select("id", { count: "exact", head: true }),
-    countWhere((q: any) => q.eq("appointment_date", today)),
-    countWhere((q: any) => q.gte("appointment_date", today).in("appointment_status", ["confirmed", "scheduled", "booked"])),
-    countWhere((q: any) => q.in("appointment_status", ["pending", "awaiting_payment"])),
+    // Today's appointments — scheduled for today and not cancelled
+    countWhere((q: any) =>
+      q.eq("appointment_date", today).not("appointment_status", "in", "(cancelled,canceled)"),
+    ),
+    // Upcoming — confirmed appointments dated today or later
+    countWhere((q: any) => q.gte("appointment_date", today).eq("appointment_status", "confirmed")),
+    // Pending — awaiting payment, not cancelled/completed
+    countWhere((q: any) =>
+      q
+        .eq("payment_status", "pending")
+        .not("appointment_status", "in", "(cancelled,canceled,completed)"),
+    ),
     countWhere((q: any) => q.eq("appointment_status", "completed")),
     countWhere((q: any) => q.in("appointment_status", ["cancelled", "canceled"])),
     db.from("payments").select("amount").eq("status", "paid").gte("paid_at", startOfDayISO),
@@ -100,8 +109,9 @@ export async function fetchAppointmentTrend(days = 30): Promise<TrendPoint[]> {
   const since = daysAgoISO(days - 1);
   const { data, error } = await db
     .from("appointments")
-    .select("appointment_date")
-    .gte("appointment_date", since);
+    .select("appointment_date, appointment_status")
+    .gte("appointment_date", since)
+    .not("appointment_status", "in", "(cancelled,canceled)");
   if (error) throw error;
   const buckets = buildDateBuckets(days);
   const idx = new Map(buckets.map((b, i) => [b.date, i] as const));
