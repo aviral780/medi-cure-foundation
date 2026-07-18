@@ -9,13 +9,22 @@ export const Route = createFileRoute("/admin")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
-    const { data: admin } = await supabase
+    const { data: admin, error: adminError } = await supabase
       .from("admins" as never)
       .select("id, is_active")
       .eq("user_id", data.user.id)
       .eq("is_active", true)
       .maybeSingle();
-    if (!admin) throw redirect({ to: "/" });
+    // Only demote to patient home when we have a definitive non-admin answer.
+    // On transient/RLS errors, fall back to the cached admin flag written by
+    // AuthProvider so a refresh doesn't kick a real admin out of /admin.
+    if (!admin) {
+      const cached =
+        typeof window !== "undefined" &&
+        window.localStorage.getItem("medicure:isAdmin") === "1";
+      if (adminError && cached) return { user: data.user };
+      throw redirect({ to: "/" });
+    }
     return { user: data.user };
   },
   component: AdminLayout,

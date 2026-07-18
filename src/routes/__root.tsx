@@ -4,6 +4,8 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,7 +13,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AuthProvider } from "../hooks/useAuth";
+import { AuthProvider, useAuth } from "../hooks/useAuth";
 import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
@@ -125,10 +127,29 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <AdminSessionGuard />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+// Keeps authenticated admins on the /admin routes across page refreshes.
+// If the current user is an active admin but has landed on a patient-facing
+// route (e.g. after a hard reload), send them back to the admin dashboard.
+function AdminSessionGuard() {
+  const { isAdmin, adminChecked, user } = useAuth();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  useEffect(() => {
+    if (!user || !adminChecked || !isAdmin) return;
+    if (pathname.startsWith("/admin")) return;
+    if (pathname.startsWith("/auth")) return;
+    navigate({ to: "/admin", replace: true });
+  }, [user, isAdmin, adminChecked, pathname, navigate]);
+
+  return null;
 }
