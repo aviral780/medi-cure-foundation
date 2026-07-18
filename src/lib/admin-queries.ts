@@ -109,8 +109,9 @@ export async function fetchAppointmentTrend(days = 30): Promise<TrendPoint[]> {
   const since = daysAgoISO(days - 1);
   const { data, error } = await db
     .from("appointments")
-    .select("appointment_date")
-    .gte("appointment_date", since);
+    .select("appointment_date, appointment_status")
+    .gte("appointment_date", since)
+    .not("appointment_status", "in", "(cancelled,canceled)");
   if (error) throw error;
   const buckets = buildDateBuckets(days);
   const idx = new Map(buckets.map((b, i) => [b.date, i] as const));
