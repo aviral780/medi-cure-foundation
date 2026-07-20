@@ -23,7 +23,6 @@ import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminPatientsRouteImport } from './routes/admin.patients'
 import { Route as AdminDoctorsRouteImport } from './routes/admin.doctors'
 import { Route as AdminConsultationTypesRouteImport } from './routes/admin.consultation-types'
-import { Route as AdminAppointmentsRouteImport } from './routes/admin.appointments'
 import { Route as AuthenticatedVisitsRouteImport } from './routes/_authenticated/visits'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -112,11 +111,6 @@ const AdminDoctorsRoute = AdminDoctorsRouteImport.update({
 const AdminConsultationTypesRoute = AdminConsultationTypesRouteImport.update({
   id: '/consultation-types',
   path: '/consultation-types',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminAppointmentsRoute = AdminAppointmentsRouteImport.update({
-  id: '/appointments',
-  path: '/appointments',
   getParentRoute: () => AdminRoute,
 } as any)
 const AuthenticatedVisitsRoute = AuthenticatedVisitsRouteImport.update({
@@ -243,7 +237,6 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
-  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/consultation-types': typeof AdminConsultationTypesRoute
   '/admin/doctors': typeof AdminDoctorsRoute
   '/admin/patients': typeof AdminPatientsRoute
@@ -278,7 +271,6 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/visits': typeof AuthenticatedVisitsRoute
-  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/consultation-types': typeof AdminConsultationTypesRoute
   '/admin/doctors': typeof AdminDoctorsRoute
   '/admin/patients': typeof AdminPatientsRoute
@@ -316,7 +308,6 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/visits': typeof AuthenticatedVisitsRoute
-  '/admin/appointments': typeof AdminAppointmentsRoute
   '/admin/consultation-types': typeof AdminConsultationTypesRoute
   '/admin/doctors': typeof AdminDoctorsRoute
   '/admin/patients': typeof AdminPatientsRoute
@@ -354,7 +345,6 @@ export interface FileRouteTypes {
     | '/account'
     | '/payments'
     | '/visits'
-    | '/admin/appointments'
     | '/admin/consultation-types'
     | '/admin/doctors'
     | '/admin/patients'
@@ -389,7 +379,6 @@ export interface FileRouteTypes {
     | '/account'
     | '/payments'
     | '/visits'
-    | '/admin/appointments'
     | '/admin/consultation-types'
     | '/admin/doctors'
     | '/admin/patients'
@@ -426,7 +415,6 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/payments'
     | '/_authenticated/visits'
-    | '/admin/appointments'
     | '/admin/consultation-types'
     | '/admin/doctors'
     | '/admin/patients'
@@ -572,13 +560,6 @@ declare module '@tanstack/react-router' {
       path: '/consultation-types'
       fullPath: '/admin/consultation-types'
       preLoaderRoute: typeof AdminConsultationTypesRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/appointments': {
-      id: '/admin/appointments'
-      path: '/appointments'
-      fullPath: '/admin/appointments'
-      preLoaderRoute: typeof AdminAppointmentsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_authenticated/visits': {
@@ -759,7 +740,6 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface AdminRouteChildren {
-  AdminAppointmentsRoute: typeof AdminAppointmentsRoute
   AdminConsultationTypesRoute: typeof AdminConsultationTypesRoute
   AdminDoctorsRoute: typeof AdminDoctorsRoute
   AdminPatientsRoute: typeof AdminPatientsRoute
@@ -771,7 +751,6 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminAppointmentsRoute: AdminAppointmentsRoute,
   AdminConsultationTypesRoute: AdminConsultationTypesRoute,
   AdminDoctorsRoute: AdminDoctorsRoute,
   AdminPatientsRoute: AdminPatientsRoute,
@@ -809,13 +788,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
