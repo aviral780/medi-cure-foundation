@@ -39,7 +39,7 @@ type AdminAppointmentRow = {
   consultation_types: { name: string | null; mode: string | null } | null;
 };
 
-type PatientProfile = { id: string; full_name: string | null; email: string | null };
+type PatientProfile = { id: string; full_name: string | null };
 
 const db = supabase as any;
 
@@ -64,7 +64,7 @@ async function fetchAdminAppointments(): Promise<{
   if (patientIds.length > 0) {
     const { data: profs, error: pErr } = await db
       .from("profiles")
-      .select("id, full_name, email")
+      .select("id, full_name")
       .in("id", patientIds);
     if (pErr) throw pErr;
     for (const p of (profs ?? []) as PatientProfile[]) patients.set(p.id, p);
@@ -136,7 +136,6 @@ function AppointmentsPage() {
         const hay = [
           r.id,
           p?.full_name ?? "",
-          p?.email ?? "",
           r.doctors?.full_name ?? "",
           r.doctors?.specialization ?? "",
           r.consultation_types?.name ?? "",
@@ -242,7 +241,7 @@ function AppointmentsPage() {
                   <TableRow key={r.id}>
                     <TableCell className="font-mono text-xs">{r.id.slice(0, 8)}</TableCell>
                     <TableCell className="font-medium">
-                      {patient?.full_name ?? patient?.email ?? "—"}
+                      {patient?.full_name ?? "—"}
                     </TableCell>
                     <TableCell>
                       {r.doctors?.full_name ?? "—"}
