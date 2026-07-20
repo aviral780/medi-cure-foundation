@@ -9,7 +9,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "../lib/supabase";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -127,6 +129,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <AuthSessionSync />
         <AdminSessionGuard />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
@@ -134,6 +137,37 @@ function RootComponent() {
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+// When the authenticated Supabase user changes (sign in, sign out, or switch),
+// drop cached query data so the previous user's data never bleeds into the
+// new session, and re-run route loaders so guards re-evaluate.
+function AuthSessionSync() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const lastUserId = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      const nextId = session?.user?.id ?? null;
+      if (lastUserId.current === undefined) {
+        lastUserId.current = nextId;
+        return;
+      }
+      if (lastUserId.current === nextId) return;
+      lastUserId.current = nextId;
+      queryClient.cancelQueries();
+      queryClient.clear();
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("medicure:isAdmin");
+      }
+      router.invalidate();
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [queryClient, router]);
+
+  return null;
 }
 
 // Keeps authenticated admins on the /admin routes across page refreshes.
@@ -145,7 +179,14 @@ function AdminSessionGuard() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
-    if (!user || !adminChecked || !isAdmin) return;
+    if (!adminChecked) return;
+    // Non-admin (or signed-out) sitting inside /admin must be evicted so
+    // stale admin UI from a previous session cannot leak to a new user.
+    if (pathname.startsWith("/admin") && !isAdmin) {
+      navigate({ to: user ? "/account" : "/auth", replace: true });
+      return;
+    }
+    if (!user || !isAdmin) return;
     if (pathname.startsWith("/admin")) return;
     if (pathname.startsWith("/auth")) return;
     navigate({ to: "/admin", replace: true });
