@@ -22,6 +22,7 @@ import {
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 import { supabase } from "@/lib/supabase";
 import { formatTime } from "@/lib/booking-queries";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/appointments")({
   component: AppointmentsPage,
@@ -88,32 +89,36 @@ function formatMode(mode: string | null | undefined): string {
 
 function AppointmentsPage() {
   const queryClient = useQueryClient();
+  const { user, isAdmin, adminChecked } = useAuth();
+  const userId = user?.id ?? null;
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["admin", "appointments"],
+    queryKey: ["admin", "appointments", userId],
     queryFn: fetchAdminAppointments,
+    enabled: Boolean(userId) && adminChecked && isAdmin,
   });
 
   // Realtime: refresh on any change to appointments so bookings, cancellations
   // and reschedules appear without a manual page refresh.
   useEffect(() => {
+    if (!userId || !isAdmin) return;
     const channel = (supabase as any)
-      .channel("admin-appointments")
+      .channel(`admin-appointments:${userId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "appointments" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["admin", "appointments"] });
+          queryClient.invalidateQueries({ queryKey: ["admin", "appointments", userId] });
         },
       )
       .subscribe();
     return () => {
       (supabase as any).removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, userId, isAdmin]);
 
   const filtered = useMemo(() => {
     const rows = data?.rows ?? [];
