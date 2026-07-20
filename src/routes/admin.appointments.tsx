@@ -89,8 +89,9 @@ function formatMode(mode: string | null | undefined): string {
 
 function AppointmentsPage() {
   const queryClient = useQueryClient();
-  const { user, isAdmin, adminChecked } = useAuth();
+  const { user, session, isAdmin, adminChecked } = useAuth();
   const userId = user?.id ?? null;
+  const accessToken = session?.access_token ?? null;
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -103,10 +104,23 @@ function AppointmentsPage() {
 
   // Realtime: refresh on any change to appointments so bookings, cancellations
   // and reschedules appear without a manual page refresh.
+  //
+  // The channel lifecycle is intentionally keyed on the current Supabase
+  // session's access token (not on `isAdmin` / `adminChecked`) so it:
+  //   - reconnects immediately when the session or token rotates
+  //     (sign-in, sign-out, token refresh, account switch), and
+  //   - is established as soon as there is any authenticated session,
+  //     so events cannot be silently missed during the brief window while
+  //     `adminChecked` is still resolving.
+  //
+  // Security is preserved by the query itself: it stays gated by
+  // `adminChecked && isAdmin`, and `invalidateQueries` on a disabled query
+  // is a no-op — it will only refetch once admin membership is confirmed,
+  // and RLS still governs which rows come back.
   useEffect(() => {
-    if (!userId || !isAdmin) return;
+    if (!userId || !accessToken) return;
     const channel = (supabase as any)
-      .channel(`admin-appointments:${userId}`)
+      .channel(`admin-appointments:${userId}:${accessToken.slice(-12)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "appointments" },
@@ -118,7 +132,7 @@ function AppointmentsPage() {
     return () => {
       (supabase as any).removeChannel(channel);
     };
-  }, [queryClient, userId, isAdmin]);
+  }, [queryClient, userId, accessToken]);
 
   const filtered = useMemo(() => {
     const rows = data?.rows ?? [];
