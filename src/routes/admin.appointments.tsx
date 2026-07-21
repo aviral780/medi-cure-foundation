@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Filter, Eye, Check, CheckCheck, X, CalendarClock } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadge
 import { supabase } from "@/lib/supabase";
 import { formatTime } from "@/lib/booking-queries";
 import { useAuth } from "@/hooks/useAuth";
+import { AppointmentDetailsDrawer } from "@/components/admin/AppointmentDetailsDrawer";
 
 export const Route = createFileRoute("/admin/appointments")({
   component: AppointmentsPage,
@@ -95,6 +96,7 @@ function AppointmentsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [viewId, setViewId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin", "appointments", userId],
@@ -280,10 +282,13 @@ function AppointmentsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
-                        <Button size="icon" variant="ghost" title="View" asChild>
-                          <Link to="/appointments/$appointmentId" params={{ appointmentId: r.id }}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="View"
+                          onClick={() => setViewId(r.id)}
+                        >
+                          <Eye className="h-4 w-4" />
                         </Button>
                         <Button size="icon" variant="ghost" title="Confirm (not available)" disabled>
                           <Check className="h-4 w-4" />
@@ -312,6 +317,13 @@ function AppointmentsPage() {
           </Table>
         </div>
       </div>
+      <AppointmentDetailsDrawer
+        appointmentId={viewId}
+        open={viewId !== null}
+        onOpenChange={(o) => {
+          if (!o) setViewId(null);
+        }}
+      />
     </div>
   );
 }
