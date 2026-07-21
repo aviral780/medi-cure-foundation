@@ -139,7 +139,6 @@ export function AppointmentDetailsDrawer({
 
   const status = (appt?.appointment_status ?? "").toLowerCase();
   const isCancelled = status === "cancelled" || status === "canceled";
-  const isCompleted = status === "completed";
   const isRescheduled = status === "rescheduled";
 
   const timeline: TimelineStep[] = appt
@@ -445,9 +444,7 @@ function InfoRow({
       />
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="mt-0.5 break-words capitalize-first text-foreground">
-          {value}
-        </p>
+        <p className="mt-0.5 break-words text-foreground">{value}</p>
       </div>
     </div>
   );
