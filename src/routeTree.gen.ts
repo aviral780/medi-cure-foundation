@@ -17,7 +17,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DoctorsIndexRouteImport } from './routes/doctors.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminScheduleRouteImport } from './routes/admin.schedule'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminPatientsRouteImport } from './routes/admin.patients'
@@ -82,11 +81,6 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminScheduleRoute = AdminScheduleRouteImport.update({
-  id: '/schedule',
-  path: '/schedule',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
@@ -249,7 +243,6 @@ export interface FileRoutesByFullPath {
   '/admin/patients': typeof AdminPatientsRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/schedule': typeof AdminScheduleRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/doctors/': typeof DoctorsIndexRoute
@@ -284,7 +277,6 @@ export interface FileRoutesByTo {
   '/admin/patients': typeof AdminPatientsRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/schedule': typeof AdminScheduleRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin': typeof AdminIndexRoute
   '/doctors': typeof DoctorsIndexRoute
@@ -322,7 +314,6 @@ export interface FileRoutesById {
   '/admin/patients': typeof AdminPatientsRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
-  '/admin/schedule': typeof AdminScheduleRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
   '/doctors/': typeof DoctorsIndexRoute
@@ -360,7 +351,6 @@ export interface FileRouteTypes {
     | '/admin/patients'
     | '/admin/payments'
     | '/admin/reports'
-    | '/admin/schedule'
     | '/admin/settings'
     | '/admin/'
     | '/doctors/'
@@ -395,7 +385,6 @@ export interface FileRouteTypes {
     | '/admin/patients'
     | '/admin/payments'
     | '/admin/reports'
-    | '/admin/schedule'
     | '/admin/settings'
     | '/admin'
     | '/doctors'
@@ -432,7 +421,6 @@ export interface FileRouteTypes {
     | '/admin/patients'
     | '/admin/payments'
     | '/admin/reports'
-    | '/admin/schedule'
     | '/admin/settings'
     | '/admin/'
     | '/doctors/'
@@ -530,13 +518,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/schedule': {
-      id: '/admin/schedule'
-      path: '/schedule'
-      fullPath: '/admin/schedule'
-      preLoaderRoute: typeof AdminScheduleRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/reports': {
@@ -765,7 +746,6 @@ interface AdminRouteChildren {
   AdminPatientsRoute: typeof AdminPatientsRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminReportsRoute: typeof AdminReportsRoute
-  AdminScheduleRoute: typeof AdminScheduleRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -777,7 +757,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPatientsRoute: AdminPatientsRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminReportsRoute: AdminReportsRoute,
-  AdminScheduleRoute: AdminScheduleRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
