@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { ArrowLeft, Clock, MapPin, Video } from "lucide-react";
@@ -17,6 +17,7 @@ import {
   type ConsultationType,
 } from "@/lib/booking-queries";
 import { SlotButton } from "@/components/booking/SlotButton";
+import { supabase } from "@/lib/supabase";
 
 const searchSchema = z.object({
   consultationTypeId: z.string().min(1).optional(),
@@ -31,6 +32,7 @@ function BookingSelectionPage() {
   const { doctorId } = Route.useParams();
   const { consultationTypeId: preselectId } = Route.useSearch();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const doctorQ = useQuery({ queryKey: ["doctor", doctorId], queryFn: () => fetchDoctorById(doctorId) });
   const typesQ = useQuery({
@@ -58,6 +60,25 @@ function BookingSelectionPage() {
     enabled: !!selectedTypeId,
     queryFn: () => fetchAllSlots(doctorId, selectedTypeId!),
   });
+
+  // Realtime: reflect admin schedule edits (create / block / unblock / delete)
+  // and other patients' bookings immediately.
+  useEffect(() => {
+    if (!selectedTypeId) return;
+    const channel = (supabase as any)
+      .channel(`patient-slots:${doctorId}:${selectedTypeId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "availability_slots" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["slots", doctorId, selectedTypeId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      (supabase as any).removeChannel(channel);
+    };
+  }, [queryClient, doctorId, selectedTypeId]);
 
   const dates = useMemo(() => {
     const map = new Map<string, AvailabilitySlot[]>();

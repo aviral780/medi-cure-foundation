@@ -18,6 +18,7 @@ import {
   type AvailabilitySlot,
 } from "@/lib/booking-queries";
 import { SlotButton } from "@/components/booking/SlotButton";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId/reschedule")({
   component: ReschedulePage,
@@ -58,6 +59,25 @@ function ReschedulePage() {
     enabled: !!doctorId && !!consultationTypeId && canReschedule,
     queryFn: () => fetchAllSlots(doctorId!, consultationTypeId!),
   });
+
+  // Realtime: keep the picker in sync with admin schedule edits and other
+  // patients' bookings.
+  useEffect(() => {
+    if (!doctorId || !consultationTypeId) return;
+    const channel = (supabase as any)
+      .channel(`reschedule-slots:${doctorId}:${consultationTypeId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "availability_slots" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["slots", doctorId, consultationTypeId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      (supabase as any).removeChannel(channel);
+    };
+  }, [queryClient, doctorId, consultationTypeId]);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [newSlotId, setNewSlotId] = useState<string | null>(null);
