@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarDays,
   CalendarCheck,
@@ -31,6 +32,8 @@ import {
   fetchRecentAppointments,
 } from "@/lib/admin-queries";
 import { formatTime } from "@/lib/booking-queries";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/admin/")({
   component: DashboardPage,
@@ -41,10 +44,37 @@ function formatINR(n: number): string {
 }
 
 function DashboardPage() {
+  const queryClient = useQueryClient();
+  const { user, session } = useAuth();
+  const userId = user?.id ?? null;
+  const accessToken = session?.access_token ?? null;
   const stats = useQuery({ queryKey: ["admin", "stats"], queryFn: fetchAdminStats });
   const trend = useQuery({ queryKey: ["admin", "appt-trend", 30], queryFn: () => fetchAppointmentTrend(30) });
   const revenue = useQuery({ queryKey: ["admin", "revenue-trend", 30], queryFn: () => fetchRevenueTrend(30) });
   const recent = useQuery({ queryKey: ["admin", "recent-appts"], queryFn: () => fetchRecentAppointments(10) });
+
+  useEffect(() => {
+    if (!userId || !accessToken) return;
+    const suffix = accessToken.slice(-12);
+    const invalidateAll = () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "revenue-trend", 30] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "appt-trend", 30] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "recent-appts"] });
+    };
+    const chPay = (supabase as any)
+      .channel(`admin-dash-payments:${userId}:${suffix}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "payments" }, invalidateAll)
+      .subscribe();
+    const chAppt = (supabase as any)
+      .channel(`admin-dash-appts:${userId}:${suffix}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, invalidateAll)
+      .subscribe();
+    return () => {
+      (supabase as any).removeChannel(chPay);
+      (supabase as any).removeChannel(chAppt);
+    };
+  }, [queryClient, userId, accessToken]);
 
   const s = stats.data;
 
