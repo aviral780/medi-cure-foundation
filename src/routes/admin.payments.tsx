@@ -28,7 +28,6 @@ type AdminPaymentRow = {
   payment_gateway: string | null;
   gateway_order_id: string | null;
   gateway_payment_id: string | null;
-  payment_method: string | null;
   status: string;
   paid_at: string | null;
   created_at: string;
@@ -50,7 +49,7 @@ async function fetchAdminPayments(): Promise<{
   const { data, error } = await db
     .from("payments")
     .select(
-      "id, appointment_id, patient_id, amount, currency, payment_gateway, gateway_order_id, gateway_payment_id, payment_method, status, paid_at, created_at, appointments(id, appointment_date, start_time, doctors(full_name, specialization), consultation_types(name, mode))",
+      "id, appointment_id, patient_id, amount, currency, payment_gateway, gateway_order_id, gateway_payment_id, status, paid_at, created_at, appointments(id, appointment_date, start_time, doctors(full_name, specialization), consultation_types(name, mode))",
     )
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -83,8 +82,6 @@ function formatDateOnly(date: string | null): string {
 }
 
 function methodLabel(row: AdminPaymentRow): string {
-  const m = row.payment_method?.trim();
-  if (m) return m.toUpperCase();
   return (row.payment_gateway ?? "razorpay").toUpperCase();
 }
 
