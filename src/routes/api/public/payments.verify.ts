@@ -53,30 +53,21 @@ export const Route = createFileRoute("/api/public/payments/verify")({
           );
 
           if (!valid) {
-            await supabase
-              .from("payments")
-              .update({
-                status: "failed",
-                error_description: "Signature verification failed",
-                gateway_payment_id: body.razorpay_payment_id,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", (paymentRow as any).id);
+            await supabase.rpc("mark_payment_failed", {
+              p_payment_id: (paymentRow as any).id,
+              p_gateway_payment_id: body.razorpay_payment_id,
+              p_reason: "Signature verification failed",
+            });
             return jsonError(400, "Payment signature verification failed");
           }
 
           const details = await razorpayFetchPayment(body.razorpay_payment_id);
 
-          const { error: updErr } = await supabase
-            .from("payments")
-            .update({
-              status: "paid",
-              gateway_payment_id: body.razorpay_payment_id,
-              gateway_signature: body.razorpay_signature,
-              paid_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", (paymentRow as any).id);
+          const { error: updErr } = await supabase.rpc("mark_payment_paid", {
+            p_payment_id: (paymentRow as any).id,
+            p_gateway_payment_id: body.razorpay_payment_id,
+            p_gateway_signature: body.razorpay_signature,
+          });
           if (updErr) return jsonError(500, `Could not update payment: ${updErr.message}`);
 
           const { error: rpcErr } = await supabase.rpc("mark_appointment_paid", {
