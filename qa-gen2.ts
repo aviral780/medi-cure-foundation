@@ -17,3 +17,5 @@ const p:any={totalPatients:88,newPatients:12,returningPatients:31,totalVisits:21
  recentRegistrations:Array.from({length:10},(_,i)=>({name:`New Patient ${i+1}`,email:`new${i+1}@example.com`,joined:new Date().toISOString()})),
  monthlyPatients:Array.from({length:12},(_,i)=>({key:String(i),label:`Mon ${i+1}`,value:i}))};
 downloadCombinedReportPdf(r,a,p);
+const d = new jsPDF();
+console.log("save is patched:", d.save.toString().slice(0,60));
