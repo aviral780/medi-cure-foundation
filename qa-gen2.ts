@@ -4,7 +4,7 @@ import jsPDF from "jspdf";
   fs.writeFileSync("/tmp/qa/out.pdf", Buffer.from(this.output("arraybuffer")));
   console.log("saved", name);
 };
-const { downloadCombinedReportPdf } = await import("./src/lib/report-pdf");
+const { downloadCombinedReportPdf } = await import("./qa-pdf");
 const r:any={totalRevenue:125400,todaysRevenue:2500,totalPaidAppointments:48,averageRevenue:2612.5,currency:"INR",
  byDay:Array.from({length:30},(_,i)=>({key:String(i),label:`Jul ${i+1}`,value:i%3?0:1500+i*10})),
  byMonth:Array.from({length:12},(_,i)=>({key:String(i),label:`Mon ${i+1} 2026`,value:i*1200}))};
