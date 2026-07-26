@@ -12,6 +12,7 @@ const p:any={totalPatients:88,newPatients:12,returningPatients:31,totalVisits:21
  monthlyPatients:Array.from({length:12},(_,i)=>({key:String(i),label:`Mon ${i+1}`,value:i}))};
 (globalThis as any).__out="";
 // stub save
+import fs from "fs";
 const jsPDFmod:any = await import("jspdf");
-jsPDFmod.default.prototype.save = function(name:string){ require("fs").writeFileSync("/tmp/qa/out.pdf", Buffer.from(this.output("arraybuffer"))); };
+jsPDFmod.default.prototype.save = function(name:string){ fs.writeFileSync("/tmp/qa/out.pdf", Buffer.from(this.output("arraybuffer"))); };
 downloadCombinedReportPdf(r,a,p);
