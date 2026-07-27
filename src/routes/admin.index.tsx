@@ -82,7 +82,9 @@ function DashboardPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Live overview of clinic activity, appointments and revenue.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {clinic.name} — live overview of clinic activity, appointments and revenue.
+        </p>
       </header>
 
       {stats.error && (
