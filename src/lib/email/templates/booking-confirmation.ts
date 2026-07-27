@@ -1,3 +1,5 @@
+import { DEFAULT_CLINIC } from "@/lib/clinic-constants";
+
 // Reusable booking confirmation email template.
 
 export type BookingConfirmationData = {
@@ -10,6 +12,7 @@ export type BookingConfirmationData = {
   endTime: string;
   feeDisplay?: string | null; // e.g. "₹500" or "Free"
   appointmentId?: string | null;
+  clinicName?: string | null;
 };
 
 export function renderBookingConfirmationEmail(d: BookingConfirmationData): {
@@ -18,7 +21,8 @@ export function renderBookingConfirmationEmail(d: BookingConfirmationData): {
 } {
   const modeLabel = d.mode === "online" ? "Video consultation" : "In-person";
   const greetingName = d.patientName?.trim() ? d.patientName : "there";
-  const subject = `Your MediCure appointment with ${d.doctorName} is confirmed`;
+  const clinic = d.clinicName?.trim() || DEFAULT_CLINIC.name;
+  const subject = `Your ${escapeHtml(clinic)} appointment with ${d.doctorName} is confirmed`;
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;background:#f8fafc;padding:24px">
       <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px;color:#0f172a;border:1px solid #e2e8f0">
@@ -32,8 +36,8 @@ export function renderBookingConfirmationEmail(d: BookingConfirmationData): {
           ${d.feeDisplay ? `<tr><td style="padding:6px 0;color:#64748b">Fee</td><td style="padding:6px 0">${escapeHtml(d.feeDisplay)}</td></tr>` : ""}
           ${d.appointmentId ? `<tr><td style="padding:6px 0;color:#64748b">Reference</td><td style="padding:6px 0;font-family:monospace;font-size:12px">${escapeHtml(d.appointmentId)}</td></tr>` : ""}
         </table>
-        <p style="margin:16px 0 0;color:#475569;font-size:14px">You can view or manage this appointment anytime from the Visits tab in MediCure.</p>
-        <p style="margin:20px 0 0;color:#94a3b8;font-size:12px">— The MediCure Team</p>
+        <p style="margin:16px 0 0;color:#475569;font-size:14px">You can view or manage this appointment anytime from the Visits tab in ${escapeHtml(clinic)}.</p>
+        <p style="margin:20px 0 0;color:#94a3b8;font-size:12px">— The ${escapeHtml(clinic)} Team</p>
       </div>
     </div>
   `;
