@@ -11,6 +11,7 @@ import {
   Settings,
   X,
 } from "lucide-react";
+import { useClinicSettings } from "@/lib/clinic-settings";
 
 type NavItem = {
   to: string;
@@ -32,6 +33,7 @@ export const adminNav: NavItem[] = [
 ];
 
 export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { clinic } = useClinicSettings();
   return (
     <>
       {open && (
