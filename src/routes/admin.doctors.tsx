@@ -1,3 +1,4 @@
+import { DEFAULT_DOCTOR } from "@/lib/clinic-constants";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Pencil, Trash2, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
