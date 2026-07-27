@@ -35,8 +35,8 @@ export function websiteHost(url: string): string {
 /** Server-safe clinic name lookup for a Supabase client of any flavour. */
 export async function fetchClinicName(db: any): Promise<string> {
   try {
-    const { data } = await db.from("clinic_settings").select("name").eq("id", 1).maybeSingle();
-    const name = (data as { name?: string } | null)?.name;
+    const { data } = await db.from("clinic_settings").select("clinic_name").eq("id", 1).maybeSingle();
+    const name = (data as { clinic_name?: string } | null)?.clinic_name;
     return name && name.trim() ? name.trim() : DEFAULT_CLINIC.name;
   } catch {
     return DEFAULT_CLINIC.name;
