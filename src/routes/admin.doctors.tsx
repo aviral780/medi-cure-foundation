@@ -11,10 +11,13 @@ export const Route = createFileRoute("/admin/doctors")({
 });
 
 const doctors = [
-  { name: "Dr. Aditi Rao", spec: "General Physician", exp: "8 yrs", fee: "₹600", status: "Active" },
-  { name: "Dr. Rajiv Mehta", spec: "Cardiologist", exp: "14 yrs", fee: "₹1,200", status: "Active" },
-  { name: "Dr. Sinha", spec: "Dermatologist", exp: "6 yrs", fee: "₹800", status: "On leave" },
-  { name: "Dr. Neha Kulkarni", spec: "Pediatrician", exp: "10 yrs", fee: "₹900", status: "Active" },
+  {
+    name: DEFAULT_DOCTOR.name,
+    spec: DEFAULT_DOCTOR.specialty,
+    exp: "40 yrs",
+    fee: "₹600",
+    status: "Active",
+  },
 ];
 
 const consultationTypes = [
