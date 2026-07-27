@@ -1,3 +1,4 @@
+import { getCachedClinic } from "@/lib/clinic-settings";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -87,7 +88,7 @@ function PaymentPage() {
         key: order.keyId,
         amount: order.amount,
         currency: order.currency,
-        name: "MediCure",
+        name: getCachedClinic().name,
         description: `${order.appointment.consultationName} · ${order.appointment.doctorName}`,
         order_id: order.orderId,
         prefill: {},
