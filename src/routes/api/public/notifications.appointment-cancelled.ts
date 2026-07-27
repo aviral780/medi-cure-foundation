@@ -1,3 +1,4 @@
+import { fetchClinicName } from "@/lib/clinic-constants";
 import { createFileRoute } from "@tanstack/react-router";
 import { sendEmail } from "@/lib/email/resend.server";
 import { renderCancellationConfirmationEmail } from "@/lib/email/templates/cancellation-confirmation";
