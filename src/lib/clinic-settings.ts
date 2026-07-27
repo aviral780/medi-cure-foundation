@@ -6,9 +6,9 @@ const CACHE_KEY = "clinic:settings";
 
 export const clinicSettingsQueryKey = ["clinic-settings"] as const;
 
-function merge(row: Partial<ClinicInfo> | null | undefined): ClinicInfo {
+function merge(row: (Partial<ClinicInfo> & { clinic_name?: string }) | null | undefined): ClinicInfo {
   return {
-    name: row?.name?.trim() || DEFAULT_CLINIC.name,
+    name: (row?.clinic_name ?? row?.name)?.trim() || DEFAULT_CLINIC.name,
     phone: row?.phone || DEFAULT_CLINIC.phone,
     email: row?.email || DEFAULT_CLINIC.email,
     website: row?.website || DEFAULT_CLINIC.website,
@@ -40,7 +40,7 @@ function cache(info: ClinicInfo) {
 export async function fetchClinicSettings(): Promise<ClinicInfo> {
   const { data, error } = await (supabase as any)
     .from("clinic_settings")
-    .select("name, phone, email, website, address, working_hours")
+    .select("clinic_name, phone, email, website, address, working_hours")
     .eq("id", 1)
     .maybeSingle();
   if (error) return getCachedClinic();
@@ -52,7 +52,7 @@ export async function fetchClinicSettings(): Promise<ClinicInfo> {
 export async function saveClinicSettings(input: ClinicInfo): Promise<ClinicInfo> {
   const payload = {
     id: 1,
-    name: input.name.trim(),
+    clinic_name: input.name.trim(),
     phone: input.phone.trim(),
     email: input.email.trim(),
     website: input.website.trim(),
@@ -63,7 +63,7 @@ export async function saveClinicSettings(input: ClinicInfo): Promise<ClinicInfo>
   const { data, error } = await (supabase as any)
     .from("clinic_settings")
     .upsert(payload, { onConflict: "id" })
-    .select("name, phone, email, website, address, working_hours")
+    .select("clinic_name, phone, email, website, address, working_hours")
     .maybeSingle();
   if (error) throw error;
   const info = merge(data ?? payload);
