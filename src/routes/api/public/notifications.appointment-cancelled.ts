@@ -52,7 +52,10 @@ export const Route = createFileRoute("/api/public/notifications/appointment-canc
             (typeof body?.reason === "string" && body.reason.trim()) ||
             ((appt as any).cancellation_reason ?? null);
 
+          const clinicName = await fetchClinicName(db);
+
           const { subject, html } = renderCancellationConfirmationEmail({
+            clinicName,
             patientName,
             doctorName: (appt as any).doctors?.full_name ?? "your doctor",
             consultationName: (appt as any).consultation_types?.name ?? "Consultation",

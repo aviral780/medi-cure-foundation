@@ -22,7 +22,7 @@ export function renderCancellationConfirmationEmail(d: CancellationConfirmationD
   const modeLabel = d.mode === "online" ? "Video consultation" : "In-person";
   const greetingName = d.patientName?.trim() ? d.patientName : "there";
   const clinic = d.clinicName?.trim() || DEFAULT_CLINIC.name;
-  const subject = `Your ${escapeHtml(clinic)} appointment with ${d.doctorName} has been cancelled`;
+  const subject = `Your ${clinic} appointment with ${d.doctorName} has been cancelled`;
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;background:#f8fafc;padding:24px">
       <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px;color:#0f172a;border:1px solid #e2e8f0">

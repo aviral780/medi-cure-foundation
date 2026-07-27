@@ -57,7 +57,10 @@ export const Route = createFileRoute("/api/public/notifications/appointment-resc
             ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(fee)
             : null;
 
+          const clinicName = await fetchClinicName(db);
+
           const { subject, html } = renderRescheduleConfirmationEmail({
+            clinicName,
             patientName,
             doctorName: (appt as any).doctors?.full_name ?? "your doctor",
             consultationName: (appt as any).consultation_types?.name ?? "Consultation",
