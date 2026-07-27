@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sendEmail } from "@/lib/email/resend.server";
 import { renderBookingConfirmationEmail } from "@/lib/email/templates/booking-confirmation";
+import { fetchClinicName } from "@/lib/clinic-constants";
 import { supabaseWithUserToken, requireUserId } from "@/lib/razorpay.server";
 
 // Best-effort booking confirmation email. Never fails the booking flow.
@@ -56,7 +57,10 @@ export const Route = createFileRoute("/api/public/notifications/appointment-conf
             ? new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(fee)
             : "Free";
 
+          const clinicName = await fetchClinicName(db);
+
           const { subject, html } = renderBookingConfirmationEmail({
+            clinicName,
             patientName,
             doctorName: (appt as any).doctors?.full_name ?? "your doctor",
             consultationName: ct.name ?? "Consultation",

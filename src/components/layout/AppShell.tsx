@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Calendar, Home, Stethoscope, User } from "lucide-react";
 import type { ReactNode } from "react";
+import { useClinicSettings } from "@/lib/clinic-settings";
 
 interface AppShellProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ const navItems = [
 ] as const;
 
 export function AppShell({ children }: AppShellProps) {
+  const { clinic } = useClinicSettings();
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -22,7 +24,7 @@ export function AppShell({ children }: AppShellProps) {
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-soft)]">
               <Stethoscope className="h-4 w-4" aria-hidden />
             </span>
-            <span className="text-base font-semibold tracking-tight">MediCure</span>
+            <span className="text-base font-semibold tracking-tight">{clinic.name}</span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
             {navItems.map((item) => (

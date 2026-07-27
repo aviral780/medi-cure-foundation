@@ -12,6 +12,7 @@ import {
   formatTime,
 } from "@/lib/booking-queries";
 import { fetchLatestPaymentForAppointment } from "@/lib/payments-api";
+import { useClinicSettings } from "@/lib/clinic-settings";
 
 export const Route = createFileRoute("/_authenticated/receipts/$appointmentId")({
   component: ReceiptPage,
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/receipts/$appointmentId")(
 function ReceiptPage() {
   const { appointmentId } = Route.useParams();
   const { user } = useAuth();
+  const { clinic } = useClinicSettings();
   const [apptQ, payQ] = useQueries({
     queries: [
       { queryKey: ["appointment", appointmentId], queryFn: () => fetchAppointmentById(appointmentId) },
@@ -67,8 +69,10 @@ function ReceiptPage() {
             <div className="flex items-start justify-between border-b border-border pb-6">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Clinic</p>
-                <h1 className="mt-1 text-2xl font-semibold text-foreground">MediCure</h1>
-                <p className="mt-1 text-xs text-muted-foreground">Payment receipt</p>
+                <h1 className="mt-1 text-2xl font-semibold text-foreground">{clinic.name}</h1>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Payment receipt · {clinic.phone} · {clinic.email}
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Status</p>

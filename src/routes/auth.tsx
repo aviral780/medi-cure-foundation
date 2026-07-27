@@ -15,7 +15,7 @@ export const Route = createFileRoute("/auth")({
 const PUBLIC_APP_URL = "https://medi-cure-foundation.lovable.app";
 
 function getEmailRedirectUrl(): string {
-  // Email confirmation links must land on the public MediCure app,
+  // Email confirmation links must land on the public Vardhman Medicare app,
   // never on a preview/lovable.dev host.
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
@@ -176,7 +176,7 @@ function AuthPage() {
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "New to MediCure?" : "Already have an account?"}{" "}
+            {mode === "login" ? "New to Vardhman Medicare?" : "Already have an account?"}{" "}
             <button
               type="button"
               className="font-medium text-primary hover:underline"

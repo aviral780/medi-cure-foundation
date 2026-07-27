@@ -1,10 +1,23 @@
 import jsPDF from "jspdf";
 import type { AppointmentReport, PatientReport, RevenueReport } from "@/lib/reports-queries";
+import { CLINIC_TAGLINE } from "@/lib/clinic-constants";
+import { getCachedClinic } from "@/lib/clinic-settings";
 
 const CLINIC = {
-  name: "MediCure",
-  tagline: "Clinic consultation & appointment management",
+  get name() {
+    return getCachedClinic().name;
+  },
+  tagline: CLINIC_TAGLINE,
 };
+
+function fileSlug(): string {
+  return (
+    getCachedClinic()
+      .name.toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "clinic"
+  );
+}
 
 const MARGIN = 48;
 
@@ -203,7 +216,7 @@ function paginate(ctx: Ctx) {
 function save(ctx: Ctx, name: string) {
   paginate(ctx);
   const stamp = new Date().toISOString().slice(0, 10);
-  ctx.doc.save(`medicure-${name}-${stamp}.pdf`);
+  ctx.doc.save(`${fileSlug()}-${name}-${stamp}.pdf`);
 }
 
 function nonZero(buckets: Array<{ label: string; value: number }>) {

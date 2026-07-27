@@ -1,3 +1,5 @@
+import { DEFAULT_CLINIC } from "@/lib/clinic-constants";
+
 // Reusable cancellation confirmation email template.
 
 export type CancellationConfirmationData = {
@@ -10,6 +12,7 @@ export type CancellationConfirmationData = {
   endTime: string;
   reason?: string | null;
   appointmentId?: string | null;
+  clinicName?: string | null;
 };
 
 export function renderCancellationConfirmationEmail(d: CancellationConfirmationData): {
@@ -18,7 +21,8 @@ export function renderCancellationConfirmationEmail(d: CancellationConfirmationD
 } {
   const modeLabel = d.mode === "online" ? "Video consultation" : "In-person";
   const greetingName = d.patientName?.trim() ? d.patientName : "there";
-  const subject = `Your MediCure appointment with ${d.doctorName} has been cancelled`;
+  const clinic = d.clinicName?.trim() || DEFAULT_CLINIC.name;
+  const subject = `Your ${clinic} appointment with ${d.doctorName} has been cancelled`;
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;background:#f8fafc;padding:24px">
       <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px;color:#0f172a;border:1px solid #e2e8f0">
@@ -32,8 +36,8 @@ export function renderCancellationConfirmationEmail(d: CancellationConfirmationD
           ${d.reason ? `<tr><td style="padding:6px 0;color:#64748b">Reason</td><td style="padding:6px 0">${escapeHtml(d.reason)}</td></tr>` : ""}
           ${d.appointmentId ? `<tr><td style="padding:6px 0;color:#64748b">Reference</td><td style="padding:6px 0;font-family:monospace;font-size:12px">${escapeHtml(d.appointmentId)}</td></tr>` : ""}
         </table>
-        <p style="margin:16px 0 0;color:#475569;font-size:14px">The time slot has been released. If this was a mistake, you can book again anytime from the MediCure app.</p>
-        <p style="margin:20px 0 0;color:#94a3b8;font-size:12px">— The MediCure Team</p>
+        <p style="margin:16px 0 0;color:#475569;font-size:14px">The time slot has been released. If this was a mistake, you can book again anytime from the ${escapeHtml(clinic)} app.</p>
+        <p style="margin:20px 0 0;color:#94a3b8;font-size:12px">— The ${escapeHtml(clinic)} Team</p>
       </div>
     </div>
   `;

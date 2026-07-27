@@ -11,6 +11,7 @@ import {
   Settings,
   X,
 } from "lucide-react";
+import { useClinicSettings } from "@/lib/clinic-settings";
 
 type NavItem = {
   to: string;
@@ -32,6 +33,7 @@ export const adminNav: NavItem[] = [
 ];
 
 export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { clinic } = useClinicSettings();
   return (
     <>
       {open && (
@@ -53,7 +55,7 @@ export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => 
               <Stethoscope className="h-4 w-4" aria-hidden />
             </span>
             <div className="leading-tight">
-              <div className="text-sm font-semibold tracking-tight">MediCure</div>
+              <div className="text-sm font-semibold tracking-tight">{clinic.name}</div>
               <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Admin</div>
             </div>
           </Link>
@@ -91,7 +93,7 @@ export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => 
           </ul>
         </nav>
         <div className="border-t border-border p-4 text-xs text-muted-foreground">
-          v1.0 · MediCure Admin
+          v1.0 · {clinic.name} Admin
         </div>
       </aside>
     </>

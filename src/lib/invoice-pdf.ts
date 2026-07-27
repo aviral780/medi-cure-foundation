@@ -1,4 +1,6 @@
 import jsPDF from "jspdf";
+import { getCachedClinic } from "@/lib/clinic-settings";
+import { websiteHost } from "@/lib/clinic-constants";
 
 export type InvoiceData = {
   invoiceNumber: string;
@@ -22,6 +24,7 @@ function formatMoney(amount: number, currency: string): string {
 }
 
 export function downloadInvoicePdf(d: InvoiceData) {
+  const clinic = getCachedClinic();
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const margin = 48;
@@ -30,11 +33,19 @@ export function downloadInvoicePdf(d: InvoiceData) {
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.text("MediCure", margin, y);
+  doc.text(clinic.name, margin, y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(120);
   doc.text("Clinic consultation receipt", margin, y + 16);
+  doc.setFontSize(9);
+  doc.text(
+    [clinic.address, `${clinic.phone} · ${clinic.email}`, websiteHost(clinic.website)]
+      .filter(Boolean)
+      .join("  |  "),
+    margin,
+    y + 30,
+  );
 
   doc.setTextColor(20);
   doc.setFont("helvetica", "bold");
@@ -46,7 +57,7 @@ export function downloadInvoicePdf(d: InvoiceData) {
   doc.text(`# ${d.invoiceNumber}`, pageW - margin, y + 16, { align: "right" });
   doc.text(`Issued: ${d.issuedOn}`, pageW - margin, y + 30, { align: "right" });
 
-  y += 60;
+  y += 72;
   doc.setDrawColor(220);
   doc.line(margin, y, pageW - margin, y);
   y += 24;

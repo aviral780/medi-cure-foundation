@@ -17,8 +17,8 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/doctors/")({
   head: () => ({
     meta: [
-      { title: "Book a consultation — MediCure" },
-      { name: "description", content: "Book an in-person or secure video consultation with our clinic's doctor on MediCure." },
+      { title: "Book a consultation — Vardhman Medicare" },
+      { name: "description", content: "Book an in-person or secure video consultation with our clinic's doctor on Vardhman Medicare." },
     ],
   }),
   validateSearch: (raw): z.infer<typeof searchSchema> => searchSchema.parse(raw),
