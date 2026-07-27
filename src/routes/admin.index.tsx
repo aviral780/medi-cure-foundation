@@ -1,3 +1,4 @@
+import { useClinicSettings } from "@/lib/clinic-settings";
 import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -44,6 +45,7 @@ function formatINR(n: number): string {
 }
 
 function DashboardPage() {
+  const { clinic } = useClinicSettings();
   const queryClient = useQueryClient();
   const { user, session } = useAuth();
   const userId = user?.id ?? null;
