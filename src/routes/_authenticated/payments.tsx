@@ -20,7 +20,7 @@ function PaymentHistoryPage() {
     <AppShell>
       <section className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Payment history</h1>
-        <p className="mt-1 text-sm text-muted-foreground">All Razorpay transactions on your MediCure account.</p>
+        <p className="mt-1 text-sm text-muted-foreground">All Razorpay transactions on your Vardhman Medicare account.</p>
 
         {isLoading && <div className="mt-6 h-32 animate-pulse rounded-2xl bg-muted" />}
         {error && (

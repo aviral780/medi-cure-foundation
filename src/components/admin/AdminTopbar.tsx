@@ -17,7 +17,7 @@ export function AdminTopbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const email = user?.email ?? "admin@medicure.app";
+  const email = user?.email ?? "admin@vardhmanivf.in";
   const name =
     (user?.user_metadata as { full_name?: string } | undefined)?.full_name ??
     email.split("@")[0];

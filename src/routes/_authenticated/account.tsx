@@ -56,7 +56,7 @@ function AccountPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-foreground">Account</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Your MediCure profile</p>
+              <p className="mt-1 text-sm text-muted-foreground">Your Vardhman Medicare profile</p>
             </div>
             <Button variant="outline" onClick={handleSignOut}>Sign out</Button>
           </div>

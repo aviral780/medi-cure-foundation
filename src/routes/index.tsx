@@ -29,7 +29,7 @@ function Index() {
               <span className="text-primary">in-person or online.</span>
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              MediCure makes it simple to book a visit with our clinic —
+              Vardhman Medicare makes it simple to book a visit with our clinic —
               choose an in-person appointment or a secure video consultation
               that fits your schedule.
             </p>

@@ -6,16 +6,16 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How it works — MediCure" },
+      { title: "How it works — Vardhman Medicare" },
       {
         name: "description",
         content:
-          "Book a doctor on MediCure in five simple steps — find a specialist, choose in-person or video, pick a slot, confirm, and manage in Visits.",
+          "Book a doctor on Vardhman Medicare in five simple steps — find a specialist, choose in-person or video, pick a slot, confirm, and manage in Visits.",
       },
-      { property: "og:title", content: "How it works — MediCure" },
+      { property: "og:title", content: "How it works — Vardhman Medicare" },
       {
         property: "og:description",
-        content: "Book verified doctors in minutes with MediCure — in-person or secure video visits.",
+        content: "Book verified doctors in minutes with Vardhman Medicare — in-person or secure video visits.",
       },
     ],
   }),
@@ -59,7 +59,7 @@ function HowItWorksPage() {
           Booking a visit
         </span>
         <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          How MediCure works
+          How Vardhman Medicare works
         </h1>
         <p className="mt-2 max-w-xl text-base text-muted-foreground">
           From finding the right doctor to managing your appointment — here's what to expect.
