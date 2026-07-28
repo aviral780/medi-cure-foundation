@@ -47,6 +47,7 @@ type PatientRow = {
 type AppointmentExtras = {
   cancellation_reason: string | null;
   updated_at: string | null;
+  patient_id: string | null;
 };
 
 async function fetchPatientProfile(patientId: string): Promise<PatientRow | null> {
@@ -62,7 +63,7 @@ async function fetchPatientProfile(patientId: string): Promise<PatientRow | null
 async function fetchAppointmentExtras(id: string): Promise<AppointmentExtras | null> {
   const { data, error } = await (supabase as any)
     .from("appointments")
-    .select("cancellation_reason, updated_at")
+    .select("cancellation_reason, updated_at, patient_id")
     .eq("id", id)
     .maybeSingle();
   if (error) return null;
@@ -124,7 +125,7 @@ export function AppointmentDetailsDrawer({
   const payment = payQ.data;
   const extras = extrasQ.data;
 
-  const patientId = appt ? (appt as any).patient_id ?? null : null;
+  const patientId = ((appt as any)?.patient_id ?? extras?.patient_id ?? null) as string | null;
 
   const patientQ = useQueries({
     queries: [
