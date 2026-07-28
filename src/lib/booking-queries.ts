@@ -157,7 +157,7 @@ export async function fetchAppointmentById(id: string): Promise<AppointmentDetai
   const { data, error } = await db
     .from("appointments")
     .select(
-      "id, appointment_status, payment_status, patient_notes, created_at, appointment_date, start_time, end_time, doctor_id, consultation_type_id, availability_slot_id, doctors(id, full_name, specialization, profile_image_url, qualifications, experience_years), consultation_types(id, name, mode, duration_minutes, fee, currency), availability_slots(id, slot_date, start_time, end_time, status)",
+      "id, patient_id, appointment_status, payment_status, patient_notes, created_at, appointment_date, start_time, end_time, doctor_id, consultation_type_id, availability_slot_id, doctors(id, full_name, specialization, profile_image_url, qualifications, experience_years), consultation_types(id, name, mode, duration_minutes, fee, currency), availability_slots(id, slot_date, start_time, end_time, status)",
     )
     .eq("id", id)
     .maybeSingle();
