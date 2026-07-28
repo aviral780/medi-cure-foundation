@@ -318,6 +318,34 @@ export function AppointmentDetailsDrawer({
                     label="Email"
                     value={patient?.email ?? "—"}
                   />
+                  <InfoRow
+                    icon={CalendarClock}
+                    label="Appointment"
+                    value={
+                      appt.appointment_date
+                        ? `${formatFullDate(appt.appointment_date)}${appt.start_time ? ` · ${formatTime(appt.start_time)}` : ""}${appt.end_time ? ` – ${formatTime(appt.end_time)}` : ""}`
+                        : "—"
+                    }
+                  />
+                  <InfoRow
+                    icon={User}
+                    label="Doctor"
+                    value={appt.doctors ? appt.doctors.full_name : "—"}
+                  />
+                  <InfoRow
+                    icon={appt.consultation_types?.mode === "online" ? Video : MapPin}
+                    label="Consultation type"
+                    value={
+                      appt.consultation_types
+                        ? `${appt.consultation_types.name} · ${formatMode(appt.consultation_types.mode)}`
+                        : "—"
+                    }
+                  />
+                  <InfoRow
+                    icon={CreditCard}
+                    label="Payment status"
+                    value={appt.payment_status ? appt.payment_status.charAt(0).toUpperCase() + appt.payment_status.slice(1) : "—"}
+                  />
                 </Section>
 
                 {/* Payment */}
