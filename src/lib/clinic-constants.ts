@@ -24,8 +24,10 @@ export const CLINIC_TAGLINE = "Clinic consultation & appointment management";
 export const DEFAULT_DOCTOR = {
   name: "Dr. Mahaveer Jain",
   specialty: "Pediatrician",
+  qualifications: "MBBS, MD (Pediatrics)",
+  experienceYears: 40,
   description:
-    "MBBS, MD (Pediatrics). Senior Pediatrician with nearly 40 years of clinical experience, providing comprehensive care for infants, children and adolescents.",
+    "Veteran pediatrician with 40+ years of experience, providing comprehensive care for infants, children and adolescents.",
 };
 
 export function websiteHost(url: string): string {
