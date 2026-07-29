@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Calendar, CalendarClock, ChevronRight, Clock, MapPin, Video, X } from "lucide-react";
+import { Calendar, CalendarClock, ChevronRight, Clock, FileText, MapPin, Video, X } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -17,6 +17,8 @@ import {
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
 import { cn } from "@/lib/utils";
+import { PrescriptionViewDialog } from "@/components/prescriptions/PrescriptionViewDialog";
+import { fetchPublishedPrescriptionAppointmentIds } from "@/lib/prescriptions-api";
 
 export const Route = createFileRoute("/_authenticated/visits")({
   component: VisitsPage,
@@ -40,6 +42,7 @@ function VisitsPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const [prescriptionVisit, setPrescriptionVisit] = useState<Visit | null>(null);
   const { data, isLoading, error } = useQuery({
     queryKey: ["visits", user?.id],
     enabled: !!user?.id,
@@ -56,6 +59,14 @@ function VisitsPage() {
   });
 
   const { upcoming, past } = splitVisits(data ?? []);
+
+  const visitIds = (data ?? []).map((v) => v.id);
+  const { data: prescriptionIds } = useQuery({
+    queryKey: ["prescription-flags", user?.id, visitIds.join(",")],
+    enabled: visitIds.length > 0,
+    queryFn: () => fetchPublishedPrescriptionAppointmentIds(visitIds),
+  });
+  const hasPrescription = (id: string) => (prescriptionIds ?? []).includes(id);
 
   return (
     <AppShell>
@@ -94,10 +105,17 @@ function VisitsPage() {
                 emptyText="No upcoming visits. Book your next appointment."
                 showActions
                 onCancel={(id) => setCancelId(id)}
+                hasPrescription={hasPrescription}
+                onViewPrescription={(v) => setPrescriptionVisit(v)}
               />
             </TabsContent>
             <TabsContent value="past" className="mt-4">
-              <VisitList visits={past} emptyText="No past visits yet." />
+              <VisitList
+                visits={past}
+                emptyText="No past visits yet."
+                hasPrescription={hasPrescription}
+                onViewPrescription={(v) => setPrescriptionVisit(v)}
+              />
             </TabsContent>
           </Tabs>
         )}
@@ -109,6 +127,14 @@ function VisitsPage() {
           onOpenChange={(v) => !v && setCancelId(null)}
         />
       )}
+      {prescriptionVisit && (
+        <PrescriptionViewDialog
+          appointmentId={prescriptionVisit.id}
+          doctorName={prescriptionVisit.doctors?.full_name}
+          open={!!prescriptionVisit}
+          onOpenChange={(v) => !v && setPrescriptionVisit(null)}
+        />
+      )}
     </AppShell>
   );
 }
@@ -118,11 +144,15 @@ function VisitList({
   emptyText,
   showActions,
   onCancel,
+  hasPrescription,
+  onViewPrescription,
 }: {
   visits: Visit[];
   emptyText: string;
   showActions?: boolean;
   onCancel?: (id: string) => void;
+  hasPrescription?: (id: string) => boolean;
+  onViewPrescription?: (visit: Visit) => void;
 }) {
   if (visits.length === 0) {
     return (
@@ -135,7 +165,13 @@ function VisitList({
     <ul className="space-y-3">
       {visits.map((v) => (
         <li key={v.id}>
-          <VisitCard visit={v} showActions={showActions} onCancel={onCancel} />
+          <VisitCard
+            visit={v}
+            showActions={showActions}
+            onCancel={onCancel}
+            hasPrescription={hasPrescription?.(v.id) ?? false}
+            onViewPrescription={onViewPrescription}
+          />
         </li>
       ))}
     </ul>
@@ -146,10 +182,14 @@ function VisitCard({
   visit,
   showActions,
   onCancel,
+  hasPrescription,
+  onViewPrescription,
 }: {
   visit: Visit;
   showActions?: boolean;
   onCancel?: (id: string) => void;
+  hasPrescription?: boolean;
+  onViewPrescription?: (visit: Visit) => void;
 }) {
   const doc = visit.doctors;
   const type = visit.consultation_types;
