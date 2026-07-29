@@ -247,6 +247,20 @@ function VisitCard({
           <PaymentBadge status={visit.payment_status} />
         </div>
       </Link>
+      {hasPrescription && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-4 h-10 w-full rounded-lg"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onViewPrescription?.(visit);
+          }}
+        >
+          <FileText className="mr-1.5 h-4 w-4" aria-hidden /> View prescription
+        </Button>
+      )}
       {showActions && (
         <div className="mt-4 space-y-2 border-t border-border/60 pt-3">
           <div className="grid grid-cols-2 gap-2">
