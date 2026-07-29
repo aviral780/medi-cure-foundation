@@ -169,6 +169,7 @@ export function AppointmentDetailsDrawer({
   const error = apptQ.error;
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
