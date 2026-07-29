@@ -1,4 +1,5 @@
-import { useQueries } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   Calendar,
@@ -7,6 +8,7 @@ import {
   Circle,
   Clock,
   CreditCard,
+  FileText,
   Mail,
   MapPin,
   Phone,
@@ -36,6 +38,9 @@ import {
 } from "@/lib/booking-queries";
 import { fetchLatestPaymentForAppointment } from "@/lib/payments-api";
 import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { PrescriptionEditorDialog } from "@/components/prescriptions/PrescriptionEditorDialog";
+import { fetchPrescriptionByAppointment } from "@/lib/prescriptions-api";
 
 type PatientRow = {
   id: string;
@@ -137,6 +142,14 @@ export function AppointmentDetailsDrawer({
     ],
   })[0];
   const patient = patientQ.data;
+
+  const [editorOpen, setEditorOpen] = useState(false);
+  const prescriptionQ = useQuery({
+    queryKey: ["prescription", appointmentId],
+    queryFn: () => fetchPrescriptionByAppointment(appointmentId as string),
+    enabled,
+  });
+  const prescription = prescriptionQ.data;
 
   const status = (appt?.appointment_status ?? "").toLowerCase();
   const isCancelled = status === "cancelled" || status === "canceled";
