@@ -361,6 +361,33 @@ export function AppointmentDetailsDrawer({
                   />
                 </Section>
 
+                {/* Prescription */}
+                <Section title="Prescription">
+                  {prescriptionQ.isLoading ? (
+                    <div className="h-10 animate-pulse rounded-lg bg-muted" />
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2.5 py-1.5 text-sm">
+                        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                        <span className="text-foreground">
+                          {prescription
+                            ? prescription.status === "published"
+                              ? "Published"
+                              : "Draft"
+                            : "No prescription yet"}
+                        </span>
+                      </div>
+                      <Button
+                        variant={prescription ? "outline" : "default"}
+                        className="mt-2 h-10 w-full rounded-lg"
+                        onClick={() => setEditorOpen(true)}
+                      >
+                        {prescription ? "Open prescription" : "Create prescription"}
+                      </Button>
+                    </>
+                  )}
+                </Section>
+
                 {/* Payment */}
                 <Section title="Payment">
                   {payment ? (
@@ -448,6 +475,18 @@ export function AppointmentDetailsDrawer({
         </ScrollArea>
       </SheetContent>
     </Sheet>
+    {appointmentId && (
+      <PrescriptionEditorDialog
+        appointmentId={appointmentId}
+        patientId={patientId}
+        doctorId={appt?.doctor_id ?? null}
+        patientName={patient?.full_name ?? "Patient"}
+        doctorName={appt?.doctors?.full_name ?? "Doctor"}
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+      />
+    )}
+    </>
   );
 }
 
