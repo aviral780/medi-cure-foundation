@@ -23,6 +23,15 @@ export const Route = createFileRoute("/api/public/notifications/appointment-canc
 
         try {
           const { token } = await requireUserId(request).catch(() => ({ token: "" }));
+
+          // Cancel the Google Calendar event / Meet link (best-effort).
+          try {
+            const { cancelMeetingForAppointment } = await import("@/lib/google/calendar.server");
+            await cancelMeetingForAppointment(appointmentId);
+          } catch (err) {
+            console.error("[cancelled] meeting cancel failed", (err as Error).message);
+          }
+
           if (!token) {
             return Response.json({ ok: true, sent: false, reason: "no_session" });
           }
