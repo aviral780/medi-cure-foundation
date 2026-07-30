@@ -33,6 +33,7 @@ type Visit = {
   appointment_date: string | null;
   start_time: string | null;
   end_time: string | null;
+  meeting_url: string | null;
   doctors: { full_name: string; specialization: string } | null;
   consultation_types: { name: string; mode: string; duration_minutes: number } | null;
   availability_slots: { slot_date: string; start_time: string; end_time: string } | null;
@@ -50,7 +51,7 @@ function VisitsPage() {
       const { data, error } = await (supabase as any)
         .from("appointments")
         .select(
-          "id, appointment_status, payment_status, patient_notes, created_at, appointment_date, start_time, end_time, doctors(full_name, specialization), consultation_types(name, mode, duration_minutes), availability_slots(slot_date, start_time, end_time)",
+          "id, appointment_status, payment_status, patient_notes, created_at, appointment_date, start_time, end_time, meeting_url, doctors(full_name, specialization), consultation_types(name, mode, duration_minutes), availability_slots(slot_date, start_time, end_time)",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -247,6 +248,19 @@ function VisitCard({
           <PaymentBadge status={visit.payment_status} />
         </div>
       </Link>
+      {visit.meeting_url &&
+        (visit.appointment_status ?? "").toLowerCase() !== "cancelled" &&
+        (visit.appointment_status ?? "").toLowerCase() !== "canceled" && (
+          <a
+            href={visit.meeting_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonVariants({ size: "sm" }), "mt-4 h-10 w-full rounded-lg")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Video className="mr-1.5 h-4 w-4" aria-hidden /> Join video consultation
+          </a>
+        )}
       {hasPrescription && (
         <Button
           variant="outline"
