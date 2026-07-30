@@ -43,6 +43,7 @@ function SettingsPage() {
           <TabsTrigger value="clinic">Clinic Information</TabsTrigger>
           <TabsTrigger value="admins">Admin Users</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
         </TabsList>
 
         <TabsContent value="clinic">
@@ -64,8 +65,84 @@ function SettingsPage() {
             </div>
           </section>
         </TabsContent>
+
+        <TabsContent value="integrations">
+          <GoogleCalendarTab />
+        </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function GoogleCalendarTab() {
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["google-calendar-status"],
+    queryFn: async () => {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
+      const res = await fetch("/api/public/google/status", {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return (await res.json()) as {
+        oauth_connected: boolean;
+        google_email: string | null;
+        connected_at: string | null;
+      };
+    },
+  });
+
+  const connected = Boolean(data?.oauth_connected);
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
+      <div className="flex items-start gap-3">
+        <CalendarCheck className="mt-0.5 h-5 w-5 text-primary" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold">Google Calendar &amp; Meet</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Online consultations automatically get a Google Calendar event with a Google Meet link
+            once payment is confirmed. Rescheduling moves the event; cancelling removes it.
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {isLoading ? (
+              <span className="text-xs text-muted-foreground">Checking connection…</span>
+            ) : connected ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                Connected{data?.google_email ? ` · ${data.google_email}` : ""}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                Not connected
+              </span>
+            )}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild className="h-10 rounded-lg">
+              <a href="/api/public/google/oauth-start">
+                {connected ? "Reconnect Google account" : "Connect Google account"}
+              </a>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-10 rounded-lg"
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
+              {isFetching ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
+              Refresh status
+            </Button>
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Sign in with the clinic's Google account and approve calendar access. The connection is
+            stored securely on the server and refreshes itself automatically.
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 
