@@ -164,9 +164,6 @@ function AppointmentDetailsPage() {
             </div>
 
             {/* Notes */}
-            {data.patient_notes && (
-              <></>
-            )}
             {data.meeting_url && !isCancelled && (
               <div className="mt-4 rounded-2xl border border-emerald-400/40 bg-emerald-50 p-5 dark:bg-emerald-950/30">
                 <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
