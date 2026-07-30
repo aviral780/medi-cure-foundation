@@ -13,6 +13,7 @@ export type BookingConfirmationData = {
   feeDisplay?: string | null; // e.g. "₹500" or "Free"
   appointmentId?: string | null;
   clinicName?: string | null;
+  meetingUrl?: string | null;
 };
 
 export function renderBookingConfirmationEmail(d: BookingConfirmationData): {
@@ -36,6 +37,15 @@ export function renderBookingConfirmationEmail(d: BookingConfirmationData): {
           ${d.feeDisplay ? `<tr><td style="padding:6px 0;color:#64748b">Fee</td><td style="padding:6px 0">${escapeHtml(d.feeDisplay)}</td></tr>` : ""}
           ${d.appointmentId ? `<tr><td style="padding:6px 0;color:#64748b">Reference</td><td style="padding:6px 0;font-family:monospace;font-size:12px">${escapeHtml(d.appointmentId)}</td></tr>` : ""}
         </table>
+        ${
+          d.meetingUrl
+            ? `<div style="margin:8px 0 16px;padding:16px;border-radius:10px;background:#ecfdf5;border:1px solid #a7f3d0">
+                 <p style="margin:0 0 10px;color:#065f46;font-size:14px"><strong>Join your video consultation</strong></p>
+                 <a href="${escapeHtml(d.meetingUrl)}" style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px">Join Google Meet</a>
+                 <p style="margin:10px 0 0;color:#047857;font-size:12px;word-break:break-all">${escapeHtml(d.meetingUrl)}</p>
+               </div>`
+            : ""
+        }
         <p style="margin:16px 0 0;color:#475569;font-size:14px">You can view or manage this appointment anytime from the Visits tab in ${escapeHtml(clinic)}.</p>
         <p style="margin:20px 0 0;color:#94a3b8;font-size:12px">— The ${escapeHtml(clinic)} Team</p>
       </div>

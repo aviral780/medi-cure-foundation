@@ -164,6 +164,21 @@ function AppointmentDetailsPage() {
             </div>
 
             {/* Notes */}
+            {data.meeting_url && !isCancelled && (
+              <div className="mt-4 rounded-2xl border border-emerald-400/40 bg-emerald-50 p-5 dark:bg-emerald-950/30">
+                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
+                  <Video className="h-4 w-4" aria-hidden /> Video consultation
+                </div>
+                <p className="mt-1 text-xs text-emerald-900/80 dark:text-emerald-200/80">
+                  Join the Google Meet call at your appointment time.
+                </p>
+                <Button asChild className="mt-3 h-11 w-full rounded-xl">
+                  <a href={data.meeting_url} target="_blank" rel="noopener noreferrer">
+                    <Video className="mr-2 h-4 w-4" /> Join Google Meet
+                  </a>
+                </Button>
+              </div>
+            )}
             {data.patient_notes && (
               <div className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)]">
                 <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

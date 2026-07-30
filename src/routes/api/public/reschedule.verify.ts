@@ -88,10 +88,22 @@ export const Route = createFileRoute("/api/public/reschedule/verify")({
           });
           if (rpcErr) return jsonError(500, `Could not reschedule: ${rpcErr.message}`);
 
+          // Move the Google Calendar event (and keep the same Meet link) for
+          // online consultations. Best-effort — never fails the reschedule.
+          let meeting: { synced: boolean; meetingUrl?: string | null } = { synced: false };
+          try {
+            const { rescheduleMeetingForAppointment } = await import("@/lib/google/calendar.server");
+            meeting = await rescheduleMeetingForAppointment(body.appointmentId);
+          } catch (err) {
+            console.error("[reschedule.verify] meeting sync failed", (err as Error).message);
+          }
+
           return jsonOk({
             ok: true,
             paymentMethod: details.method,
             paymentId: body.razorpay_payment_id,
+            meetingUrl: meeting.meetingUrl ?? null,
+            meetingSynced: meeting.synced,
           });
         } catch (e) {
           if (e instanceof HttpError) return jsonError(e.status, e.message);

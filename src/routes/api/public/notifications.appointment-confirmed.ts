@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/notifications/appointment-conf
           const { data: appt, error } = await db
             .from("appointments")
             .select(
-              "id, appointment_date, start_time, end_time, patient_id, doctors(full_name), consultation_types(name, mode, fee, currency)",
+              "id, appointment_date, start_time, end_time, patient_id, meeting_url, doctors(full_name), consultation_types(name, mode, fee, currency)",
             )
             .eq("id", appointmentId)
             .maybeSingle();
@@ -70,6 +70,7 @@ export const Route = createFileRoute("/api/public/notifications/appointment-conf
             endTime: (appt as any).end_time ?? "",
             feeDisplay,
             appointmentId: (appt as any).id,
+            meetingUrl: (appt as any).meeting_url ?? null,
           });
 
           const result = await sendEmail({ to: email, subject, html });

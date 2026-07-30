@@ -75,7 +75,26 @@ export const Route = createFileRoute("/api/public/payments/verify")({
           });
           if (rpcErr) return jsonError(500, `Could not confirm appointment: ${rpcErr.message}`);
 
-          return jsonOk({ ok: true, paymentMethod: details.method, paymentId: body.razorpay_payment_id });
+          // Online consultations get a Google Calendar event + Meet link once the
+          // appointment is paid and confirmed. Best-effort: never fails payment.
+          let meeting: { synced: boolean; reason?: string; meetingUrl?: string | null } = {
+            synced: false,
+            reason: "skipped",
+          };
+          try {
+            const { createMeetingForAppointment } = await import("@/lib/google/calendar.server");
+            meeting = await createMeetingForAppointment(body.appointmentId);
+          } catch (err) {
+            console.error("[payments.verify] meeting sync failed", (err as Error).message);
+          }
+
+          return jsonOk({
+            ok: true,
+            paymentMethod: details.method,
+            paymentId: body.razorpay_payment_id,
+            meetingUrl: meeting.meetingUrl ?? null,
+            meetingSynced: meeting.synced,
+          });
         } catch (e) {
           if (e instanceof HttpError) return jsonError(e.status, e.message);
           const msg = e instanceof Error ? e.message : "Unexpected error";

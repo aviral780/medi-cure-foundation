@@ -41,6 +41,9 @@ import { Route as ApiPublicPaymentsCreateOrderRouteImport } from './routes/api/p
 import { Route as ApiPublicNotificationsAppointmentRescheduledRouteImport } from './routes/api/public/notifications.appointment-rescheduled'
 import { Route as ApiPublicNotificationsAppointmentConfirmedRouteImport } from './routes/api/public/notifications.appointment-confirmed'
 import { Route as ApiPublicNotificationsAppointmentCancelledRouteImport } from './routes/api/public/notifications.appointment-cancelled'
+import { Route as ApiPublicGoogleStatusRouteImport } from './routes/api/public/google.status'
+import { Route as ApiPublicGoogleOauthStartRouteImport } from './routes/api/public/google.oauth-start'
+import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google.oauth-callback'
 import { Route as ApiPublicAppointmentsReleasePendingRouteImport } from './routes/api/public/appointments.release-pending'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 import { Route as AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport } from './routes/_authenticated/appointments.$appointmentId.reschedule'
@@ -216,6 +219,23 @@ const ApiPublicNotificationsAppointmentCancelledRoute =
     path: '/api/public/notifications/appointment-cancelled',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicGoogleStatusRoute = ApiPublicGoogleStatusRouteImport.update({
+  id: '/api/public/google/status',
+  path: '/api/public/google/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGoogleOauthStartRoute =
+  ApiPublicGoogleOauthStartRouteImport.update({
+    id: '/api/public/google/oauth-start',
+    path: '/api/public/google/oauth-start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicGoogleOauthCallbackRoute =
+  ApiPublicGoogleOauthCallbackRouteImport.update({
+    id: '/api/public/google/oauth-callback',
+    path: '/api/public/google/oauth-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAppointmentsReleasePendingRoute =
   ApiPublicAppointmentsReleasePendingRouteImport.update({
     id: '/api/public/appointments/release-pending',
@@ -261,6 +281,9 @@ export interface FileRoutesByFullPath {
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
+  '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
+  '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
+  '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
   '/api/public/notifications/appointment-confirmed': typeof ApiPublicNotificationsAppointmentConfirmedRoute
   '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -296,6 +319,9 @@ export interface FileRoutesByTo {
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
+  '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
+  '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
+  '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
   '/api/public/notifications/appointment-confirmed': typeof ApiPublicNotificationsAppointmentConfirmedRoute
   '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -334,6 +360,9 @@ export interface FileRoutesById {
   '/_authenticated/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
+  '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
+  '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
+  '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
   '/api/public/notifications/appointment-cancelled': typeof ApiPublicNotificationsAppointmentCancelledRoute
   '/api/public/notifications/appointment-confirmed': typeof ApiPublicNotificationsAppointmentConfirmedRoute
   '/api/public/notifications/appointment-rescheduled': typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -372,6 +401,9 @@ export interface FileRouteTypes {
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
+    | '/api/public/google/oauth-callback'
+    | '/api/public/google/oauth-start'
+    | '/api/public/google/status'
     | '/api/public/notifications/appointment-cancelled'
     | '/api/public/notifications/appointment-confirmed'
     | '/api/public/notifications/appointment-rescheduled'
@@ -407,6 +439,9 @@ export interface FileRouteTypes {
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
+    | '/api/public/google/oauth-callback'
+    | '/api/public/google/oauth-start'
+    | '/api/public/google/status'
     | '/api/public/notifications/appointment-cancelled'
     | '/api/public/notifications/appointment-confirmed'
     | '/api/public/notifications/appointment-rescheduled'
@@ -444,6 +479,9 @@ export interface FileRouteTypes {
     | '/_authenticated/appointments/$appointmentId/reschedule'
     | '/_authenticated/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
+    | '/api/public/google/oauth-callback'
+    | '/api/public/google/oauth-start'
+    | '/api/public/google/status'
     | '/api/public/notifications/appointment-cancelled'
     | '/api/public/notifications/appointment-confirmed'
     | '/api/public/notifications/appointment-rescheduled'
@@ -464,6 +502,9 @@ export interface RootRouteChildren {
   DoctorsIndexRoute: typeof DoctorsIndexRoute
   DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
   ApiPublicAppointmentsReleasePendingRoute: typeof ApiPublicAppointmentsReleasePendingRoute
+  ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
+  ApiPublicGoogleOauthStartRoute: typeof ApiPublicGoogleOauthStartRoute
+  ApiPublicGoogleStatusRoute: typeof ApiPublicGoogleStatusRoute
   ApiPublicNotificationsAppointmentCancelledRoute: typeof ApiPublicNotificationsAppointmentCancelledRoute
   ApiPublicNotificationsAppointmentConfirmedRoute: typeof ApiPublicNotificationsAppointmentConfirmedRoute
   ApiPublicNotificationsAppointmentRescheduledRoute: typeof ApiPublicNotificationsAppointmentRescheduledRoute
@@ -700,6 +741,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNotificationsAppointmentCancelledRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/google/status': {
+      id: '/api/public/google/status'
+      path: '/api/public/google/status'
+      fullPath: '/api/public/google/status'
+      preLoaderRoute: typeof ApiPublicGoogleStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/google/oauth-start': {
+      id: '/api/public/google/oauth-start'
+      path: '/api/public/google/oauth-start'
+      fullPath: '/api/public/google/oauth-start'
+      preLoaderRoute: typeof ApiPublicGoogleOauthStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/google/oauth-callback': {
+      id: '/api/public/google/oauth-callback'
+      path: '/api/public/google/oauth-callback'
+      fullPath: '/api/public/google/oauth-callback'
+      preLoaderRoute: typeof ApiPublicGoogleOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/appointments/release-pending': {
       id: '/api/public/appointments/release-pending'
       path: '/api/public/appointments/release-pending'
@@ -794,6 +856,9 @@ const rootRouteChildren: RootRouteChildren = {
   DoctorsDoctorIdIndexRoute: DoctorsDoctorIdIndexRoute,
   ApiPublicAppointmentsReleasePendingRoute:
     ApiPublicAppointmentsReleasePendingRoute,
+  ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
+  ApiPublicGoogleOauthStartRoute: ApiPublicGoogleOauthStartRoute,
+  ApiPublicGoogleStatusRoute: ApiPublicGoogleStatusRoute,
   ApiPublicNotificationsAppointmentCancelledRoute:
     ApiPublicNotificationsAppointmentCancelledRoute,
   ApiPublicNotificationsAppointmentConfirmedRoute:
