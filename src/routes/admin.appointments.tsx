@@ -207,6 +207,11 @@ function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [viewId, setViewId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("date_asc");
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
+  const [rescheduleId, setRescheduleId] = useState<string | null>(null);
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin", "appointments", userId],
@@ -250,7 +255,7 @@ function AppointmentsPage() {
     const rows = data?.rows ?? [];
     const patients = data?.patients ?? new Map<string, PatientProfile>();
     const q = search.trim().toLowerCase();
-    return rows.filter((r) => {
+    const out = rows.filter((r) => {
       const status = (r.appointment_status ?? "").toLowerCase();
       if (statusFilter !== "all") {
         if (statusFilter === "cancelled") {
@@ -262,6 +267,7 @@ function AppointmentsPage() {
         if (typeFilter === "online" && mode !== "online") return false;
         if (typeFilter === "clinic" && mode !== "in_person") return false;
       }
+      if (!matchesQuickFilter(r, quickFilter)) return false;
       if (q) {
         const p = r.patient_id ? patients.get(r.patient_id) : null;
         const hay = [
@@ -277,7 +283,57 @@ function AppointmentsPage() {
       }
       return true;
     });
-  }, [data, search, statusFilter, typeFilter]);
+
+    const nameOf = (r: AdminAppointmentRow) =>
+      (r.patient_id ? patients.get(r.patient_id)?.full_name : "") ?? "";
+    const bookedOf = (r: AdminAppointmentRow) => new Date(r.created_at).getTime() || 0;
+
+    const sorted = [...out];
+    sorted.sort((a, b) => {
+      switch (sortKey) {
+        case "date_desc":
+          return rowTimestamp(b) - rowTimestamp(a);
+        case "recent_booked":
+          return bookedOf(b) - bookedOf(a);
+        case "oldest_booked":
+          return bookedOf(a) - bookedOf(b);
+        case "patient_asc":
+          return nameOf(a).localeCompare(nameOf(b));
+        case "patient_desc":
+          return nameOf(b).localeCompare(nameOf(a));
+        case "date_asc":
+        default: {
+          // Nearest upcoming first, then past appointments (most recent first).
+          const now = Date.now();
+          const ta = rowTimestamp(a);
+          const tb = rowTimestamp(b);
+          const aUpcoming = ta >= now;
+          const bUpcoming = tb >= now;
+          if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+          return aUpcoming ? ta - tb : tb - ta;
+        }
+      }
+    });
+    return sorted;
+  }, [data, search, statusFilter, typeFilter, quickFilter, sortKey]);
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "confirmed" | "completed" }) =>
+      setAppointmentStatus(id, status),
+    onMutate: ({ id }) => setBusyId(id),
+    onSuccess: async (_data, vars) => {
+      toast.success(
+        vars.status === "confirmed" ? "Appointment confirmed" : "Appointment completed",
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-appt-detail", vars.id] }),
+        queryClient.invalidateQueries({ queryKey: ["visits"] }),
+      ]);
+    },
+    onError: (err: Error) => toast.error(err.message || "Couldn't update appointment"),
+    onSettled: () => setBusyId(null),
+  });
 
   return (
     <div className="space-y-6">
@@ -322,10 +378,37 @@ function AppointmentsPage() {
                 <SelectItem value="clinic">In-Clinic</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="h-10 rounded-xl" disabled title="Coming soon">
-              <Filter className="mr-2 h-4 w-4" /> More filters
-            </Button>
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="h-10 w-[230px] rounded-xl">
+                <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-border/60 pt-3">
+          {QUICK_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setQuickFilter(f.value)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                quickFilter === f.value
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
