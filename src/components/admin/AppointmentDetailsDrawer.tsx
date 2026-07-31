@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -8,9 +7,7 @@ import {
   CheckCircle2,
   Circle,
   Clock,
-  Copy,
   CreditCard,
-  ExternalLink,
   FileText,
   Mail,
   MapPin,
@@ -44,6 +41,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { PrescriptionEditorDialog } from "@/components/prescriptions/PrescriptionEditorDialog";
 import { fetchPrescriptionByAppointment } from "@/lib/prescriptions-api";
+import { GoogleMeetCard as MeetCard } from "@/components/appointments/GoogleMeetCard";
 
 type PatientRow = {
   id: string;
