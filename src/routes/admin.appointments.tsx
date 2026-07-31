@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Filter, Eye, Check, CheckCheck, X, CalendarClock } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  ArrowUpDown,
+  CalendarClock,
+  Check,
+  CheckCheck,
+  Eye,
+  Search,
+  X,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +33,10 @@ import { supabase } from "@/lib/supabase";
 import { formatTime } from "@/lib/booking-queries";
 import { useAuth } from "@/hooks/useAuth";
 import { AppointmentDetailsDrawer } from "@/components/admin/AppointmentDetailsDrawer";
+import { AdminRescheduleDialog } from "@/components/admin/AdminRescheduleDialog";
+import { AdminCancelDialog } from "@/components/admin/AdminCancelDialog";
+import { setAppointmentStatus } from "@/lib/admin-appointments-api";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/appointments")({
   component: AppointmentsPage,
