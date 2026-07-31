@@ -101,6 +101,103 @@ function formatMode(mode: string | null | undefined): string {
   return mode ?? "—";
 }
 
+type SortKey =
+  | "date_asc"
+  | "date_desc"
+  | "recent_booked"
+  | "oldest_booked"
+  | "patient_asc"
+  | "patient_desc";
+
+const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
+  { value: "date_asc", label: "Appointment date (ascending)" },
+  { value: "date_desc", label: "Appointment date (descending)" },
+  { value: "recent_booked", label: "Recently booked" },
+  { value: "oldest_booked", label: "Oldest booked" },
+  { value: "patient_asc", label: "Patient name (A–Z)" },
+  { value: "patient_desc", label: "Patient name (Z–A)" },
+];
+
+type QuickFilter =
+  | "all"
+  | "today"
+  | "tomorrow"
+  | "upcoming"
+  | "past"
+  | "online"
+  | "in_clinic"
+  | "paid"
+  | "pending"
+  | "cancelled"
+  | "refunded";
+
+const QUICK_FILTERS: Array<{ value: QuickFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "today", label: "Today" },
+  { value: "tomorrow", label: "Tomorrow" },
+  { value: "upcoming", label: "Upcoming" },
+  { value: "past", label: "Past" },
+  { value: "online", label: "Online" },
+  { value: "in_clinic", label: "In-Clinic" },
+  { value: "paid", label: "Paid" },
+  { value: "pending", label: "Pending" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "refunded", label: "Refunded" },
+];
+
+function isoDateOffset(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function rowTimestamp(r: AdminAppointmentRow): number {
+  if (!r.appointment_date) return 0;
+  const [y, m, d] = r.appointment_date.split("-").map(Number);
+  const [hh, mm] = (r.start_time ?? "00:00").split(":").map(Number);
+  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1, hh ?? 0, mm ?? 0).getTime();
+}
+
+function matchesQuickFilter(
+  r: AdminAppointmentRow,
+  filter: QuickFilter,
+): boolean {
+  const status = (r.appointment_status ?? "").toLowerCase();
+  const payment = (r.payment_status ?? "").toLowerCase();
+  const mode = (r.consultation_types?.mode ?? "").toLowerCase();
+  switch (filter) {
+    case "all":
+      return true;
+    case "today":
+      return r.appointment_date === isoDateOffset(0);
+    case "tomorrow":
+      return r.appointment_date === isoDateOffset(1);
+    case "upcoming":
+      return (
+        rowTimestamp(r) >= Date.now() &&
+        status !== "cancelled" &&
+        status !== "canceled"
+      );
+    case "past":
+      return rowTimestamp(r) < Date.now();
+    case "online":
+      return mode === "online";
+    case "in_clinic":
+      return mode === "in_person";
+    case "paid":
+      return payment === "paid";
+    case "pending":
+      return payment === "pending" || status === "pending";
+    case "cancelled":
+      return status === "cancelled" || status === "canceled";
+    case "refunded":
+      return payment === "refunded" || status === "refunded";
+    default:
+      return true;
+  }
+}
+
 function AppointmentsPage() {
   const queryClient = useQueryClient();
   const { user, session, isAdmin, adminChecked } = useAuth();
