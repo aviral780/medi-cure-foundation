@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   CalendarClock,
   ClipboardList,
+  Download,
   FileWarning,
   FlaskConical,
   Lightbulb,
@@ -19,9 +20,11 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { fetchPrescriptionByAppointment } from "@/lib/prescriptions-api";
 import { formatFullDate } from "@/lib/booking-queries";
 import { usePrescriptionContext } from "@/lib/prescription-context";
+import { downloadPrescriptionPdf } from "@/lib/prescription-pdf";
 import { cn } from "@/lib/utils";
 
 export function PrescriptionViewDialog({
@@ -120,6 +123,29 @@ export function PrescriptionViewDialog({
 
             {data && (
               <>
+                {/* Download */}
+                <Button
+                  variant="outline"
+                  className="h-11 w-full rounded-xl border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={() =>
+                    downloadPrescriptionPdf({
+                      prescription: data,
+                      doctorName: doctor,
+                      doctorQualifications: context.doctor.qualifications,
+                      doctorSpecialization: context.doctor.specialization,
+                      patientName: context.patientName,
+                      patientAge: context.patientAge,
+                      patientGender: context.patientGender,
+                      patientPhone: context.patientPhone,
+                      appointmentDate: context.appointmentDate,
+                      consultationType: context.consultationType,
+                      appointmentId,
+                    })
+                  }
+                >
+                  <Download className="mr-2 h-4 w-4" aria-hidden /> Download PDF
+                </Button>
+
                 {/* Doctor profile */}
                 <Card>
                   <div className="flex items-center gap-3">

@@ -44,6 +44,7 @@ import { Route as ApiPublicNotificationsAppointmentCancelledRouteImport } from '
 import { Route as ApiPublicGoogleStatusRouteImport } from './routes/api/public/google.status'
 import { Route as ApiPublicGoogleOauthStartRouteImport } from './routes/api/public/google.oauth-start'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google.oauth-callback'
+import { Route as ApiPublicAppointmentsSyncMeetingRouteImport } from './routes/api/public/appointments.sync-meeting'
 import { Route as ApiPublicAppointmentsReleasePendingRouteImport } from './routes/api/public/appointments.release-pending'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 import { Route as AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport } from './routes/_authenticated/appointments.$appointmentId.reschedule'
@@ -236,6 +237,12 @@ const ApiPublicGoogleOauthCallbackRoute =
     path: '/api/public/google/oauth-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAppointmentsSyncMeetingRoute =
+  ApiPublicAppointmentsSyncMeetingRouteImport.update({
+    id: '/api/public/appointments/sync-meeting',
+    path: '/api/public/appointments/sync-meeting',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAppointmentsReleasePendingRoute =
   ApiPublicAppointmentsReleasePendingRouteImport.update({
     id: '/api/public/appointments/release-pending',
@@ -281,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
+  '/api/public/appointments/sync-meeting': typeof ApiPublicAppointmentsSyncMeetingRoute
   '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
   '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
@@ -319,6 +327,7 @@ export interface FileRoutesByTo {
   '/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
+  '/api/public/appointments/sync-meeting': typeof ApiPublicAppointmentsSyncMeetingRoute
   '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
   '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
@@ -360,6 +369,7 @@ export interface FileRoutesById {
   '/_authenticated/appointments/$appointmentId/reschedule': typeof AuthenticatedAppointmentsAppointmentIdRescheduleRoute
   '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
+  '/api/public/appointments/sync-meeting': typeof ApiPublicAppointmentsSyncMeetingRoute
   '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
   '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
+    | '/api/public/appointments/sync-meeting'
     | '/api/public/google/oauth-callback'
     | '/api/public/google/oauth-start'
     | '/api/public/google/status'
@@ -439,6 +450,7 @@ export interface FileRouteTypes {
     | '/appointments/$appointmentId/reschedule'
     | '/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
+    | '/api/public/appointments/sync-meeting'
     | '/api/public/google/oauth-callback'
     | '/api/public/google/oauth-start'
     | '/api/public/google/status'
@@ -479,6 +491,7 @@ export interface FileRouteTypes {
     | '/_authenticated/appointments/$appointmentId/reschedule'
     | '/_authenticated/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
+    | '/api/public/appointments/sync-meeting'
     | '/api/public/google/oauth-callback'
     | '/api/public/google/oauth-start'
     | '/api/public/google/status'
@@ -502,6 +515,7 @@ export interface RootRouteChildren {
   DoctorsIndexRoute: typeof DoctorsIndexRoute
   DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
   ApiPublicAppointmentsReleasePendingRoute: typeof ApiPublicAppointmentsReleasePendingRoute
+  ApiPublicAppointmentsSyncMeetingRoute: typeof ApiPublicAppointmentsSyncMeetingRoute
   ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
   ApiPublicGoogleOauthStartRoute: typeof ApiPublicGoogleOauthStartRoute
   ApiPublicGoogleStatusRoute: typeof ApiPublicGoogleStatusRoute
@@ -762,6 +776,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGoogleOauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/appointments/sync-meeting': {
+      id: '/api/public/appointments/sync-meeting'
+      path: '/api/public/appointments/sync-meeting'
+      fullPath: '/api/public/appointments/sync-meeting'
+      preLoaderRoute: typeof ApiPublicAppointmentsSyncMeetingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/appointments/release-pending': {
       id: '/api/public/appointments/release-pending'
       path: '/api/public/appointments/release-pending'
@@ -856,6 +877,7 @@ const rootRouteChildren: RootRouteChildren = {
   DoctorsDoctorIdIndexRoute: DoctorsDoctorIdIndexRoute,
   ApiPublicAppointmentsReleasePendingRoute:
     ApiPublicAppointmentsReleasePendingRoute,
+  ApiPublicAppointmentsSyncMeetingRoute: ApiPublicAppointmentsSyncMeetingRoute,
   ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
   ApiPublicGoogleOauthStartRoute: ApiPublicGoogleOauthStartRoute,
   ApiPublicGoogleStatusRoute: ApiPublicGoogleStatusRoute,

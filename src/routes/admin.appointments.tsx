@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Filter, Eye, Check, CheckCheck, X, CalendarClock } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  ArrowUpDown,
+  CalendarClock,
+  Check,
+  CheckCheck,
+  Eye,
+  Search,
+  X,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +33,10 @@ import { supabase } from "@/lib/supabase";
 import { formatTime } from "@/lib/booking-queries";
 import { useAuth } from "@/hooks/useAuth";
 import { AppointmentDetailsDrawer } from "@/components/admin/AppointmentDetailsDrawer";
+import { AdminRescheduleDialog } from "@/components/admin/AdminRescheduleDialog";
+import { AdminCancelDialog } from "@/components/admin/AdminCancelDialog";
+import { setAppointmentStatus } from "@/lib/admin-appointments-api";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/appointments")({
   component: AppointmentsPage,
@@ -88,6 +101,103 @@ function formatMode(mode: string | null | undefined): string {
   return mode ?? "—";
 }
 
+type SortKey =
+  | "date_asc"
+  | "date_desc"
+  | "recent_booked"
+  | "oldest_booked"
+  | "patient_asc"
+  | "patient_desc";
+
+const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
+  { value: "date_asc", label: "Appointment date (ascending)" },
+  { value: "date_desc", label: "Appointment date (descending)" },
+  { value: "recent_booked", label: "Recently booked" },
+  { value: "oldest_booked", label: "Oldest booked" },
+  { value: "patient_asc", label: "Patient name (A–Z)" },
+  { value: "patient_desc", label: "Patient name (Z–A)" },
+];
+
+type QuickFilter =
+  | "all"
+  | "today"
+  | "tomorrow"
+  | "upcoming"
+  | "past"
+  | "online"
+  | "in_clinic"
+  | "paid"
+  | "pending"
+  | "cancelled"
+  | "refunded";
+
+const QUICK_FILTERS: Array<{ value: QuickFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "today", label: "Today" },
+  { value: "tomorrow", label: "Tomorrow" },
+  { value: "upcoming", label: "Upcoming" },
+  { value: "past", label: "Past" },
+  { value: "online", label: "Online" },
+  { value: "in_clinic", label: "In-Clinic" },
+  { value: "paid", label: "Paid" },
+  { value: "pending", label: "Pending" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "refunded", label: "Refunded" },
+];
+
+function isoDateOffset(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function rowTimestamp(r: AdminAppointmentRow): number {
+  if (!r.appointment_date) return 0;
+  const [y, m, d] = r.appointment_date.split("-").map(Number);
+  const [hh, mm] = (r.start_time ?? "00:00").split(":").map(Number);
+  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1, hh ?? 0, mm ?? 0).getTime();
+}
+
+function matchesQuickFilter(
+  r: AdminAppointmentRow,
+  filter: QuickFilter,
+): boolean {
+  const status = (r.appointment_status ?? "").toLowerCase();
+  const payment = (r.payment_status ?? "").toLowerCase();
+  const mode = (r.consultation_types?.mode ?? "").toLowerCase();
+  switch (filter) {
+    case "all":
+      return true;
+    case "today":
+      return r.appointment_date === isoDateOffset(0);
+    case "tomorrow":
+      return r.appointment_date === isoDateOffset(1);
+    case "upcoming":
+      return (
+        rowTimestamp(r) >= Date.now() &&
+        status !== "cancelled" &&
+        status !== "canceled"
+      );
+    case "past":
+      return rowTimestamp(r) < Date.now();
+    case "online":
+      return mode === "online";
+    case "in_clinic":
+      return mode === "in_person";
+    case "paid":
+      return payment === "paid";
+    case "pending":
+      return payment === "pending" || status === "pending";
+    case "cancelled":
+      return status === "cancelled" || status === "canceled";
+    case "refunded":
+      return payment === "refunded" || status === "refunded";
+    default:
+      return true;
+  }
+}
+
 function AppointmentsPage() {
   const queryClient = useQueryClient();
   const { user, session, isAdmin, adminChecked } = useAuth();
@@ -97,6 +207,11 @@ function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [viewId, setViewId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("date_asc");
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
+  const [rescheduleId, setRescheduleId] = useState<string | null>(null);
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin", "appointments", userId],
@@ -140,7 +255,7 @@ function AppointmentsPage() {
     const rows = data?.rows ?? [];
     const patients = data?.patients ?? new Map<string, PatientProfile>();
     const q = search.trim().toLowerCase();
-    return rows.filter((r) => {
+    const out = rows.filter((r) => {
       const status = (r.appointment_status ?? "").toLowerCase();
       if (statusFilter !== "all") {
         if (statusFilter === "cancelled") {
@@ -152,6 +267,7 @@ function AppointmentsPage() {
         if (typeFilter === "online" && mode !== "online") return false;
         if (typeFilter === "clinic" && mode !== "in_person") return false;
       }
+      if (!matchesQuickFilter(r, quickFilter)) return false;
       if (q) {
         const p = r.patient_id ? patients.get(r.patient_id) : null;
         const hay = [
@@ -167,7 +283,57 @@ function AppointmentsPage() {
       }
       return true;
     });
-  }, [data, search, statusFilter, typeFilter]);
+
+    const nameOf = (r: AdminAppointmentRow) =>
+      (r.patient_id ? patients.get(r.patient_id)?.full_name : "") ?? "";
+    const bookedOf = (r: AdminAppointmentRow) => new Date(r.created_at).getTime() || 0;
+
+    const sorted = [...out];
+    sorted.sort((a, b) => {
+      switch (sortKey) {
+        case "date_desc":
+          return rowTimestamp(b) - rowTimestamp(a);
+        case "recent_booked":
+          return bookedOf(b) - bookedOf(a);
+        case "oldest_booked":
+          return bookedOf(a) - bookedOf(b);
+        case "patient_asc":
+          return nameOf(a).localeCompare(nameOf(b));
+        case "patient_desc":
+          return nameOf(b).localeCompare(nameOf(a));
+        case "date_asc":
+        default: {
+          // Nearest upcoming first, then past appointments (most recent first).
+          const now = Date.now();
+          const ta = rowTimestamp(a);
+          const tb = rowTimestamp(b);
+          const aUpcoming = ta >= now;
+          const bUpcoming = tb >= now;
+          if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+          return aUpcoming ? ta - tb : tb - ta;
+        }
+      }
+    });
+    return sorted;
+  }, [data, search, statusFilter, typeFilter, quickFilter, sortKey]);
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: "confirmed" | "completed" }) =>
+      setAppointmentStatus(id, status),
+    onMutate: ({ id }) => setBusyId(id),
+    onSuccess: async (_data, vars) => {
+      toast.success(
+        vars.status === "confirmed" ? "Appointment confirmed" : "Appointment completed",
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["admin"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-appt-detail", vars.id] }),
+        queryClient.invalidateQueries({ queryKey: ["visits"] }),
+      ]);
+    },
+    onError: (err: Error) => toast.error(err.message || "Couldn't update appointment"),
+    onSettled: () => setBusyId(null),
+  });
 
   return (
     <div className="space-y-6">
@@ -212,10 +378,37 @@ function AppointmentsPage() {
                 <SelectItem value="clinic">In-Clinic</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="h-10 rounded-xl" disabled title="Coming soon">
-              <Filter className="mr-2 h-4 w-4" /> More filters
-            </Button>
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="h-10 w-[230px] rounded-xl">
+                <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-border/60 pt-3">
+          {QUICK_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setQuickFilter(f.value)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                quickFilter === f.value
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -258,8 +451,12 @@ function AppointmentsPage() {
               )}
               {filtered.map((r) => {
                 const patient = r.patient_id ? data?.patients.get(r.patient_id) : undefined;
+                const status = (r.appointment_status ?? "").toLowerCase();
+                const isClosed =
+                  status === "cancelled" || status === "canceled" || status === "completed";
+                const busy = busyId === r.id;
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} className="transition-colors hover:bg-muted/40">
                     <TableCell className="font-mono text-xs">{r.id.slice(0, 8)}</TableCell>
                     <TableCell className="font-medium">
                       {patient?.full_name ?? "—"}
@@ -286,25 +483,52 @@ function AppointmentsPage() {
                           size="icon"
                           variant="ghost"
                           title="View"
+                          className="rounded-lg hover:bg-primary/10 hover:text-primary"
                           onClick={() => setViewId(r.id)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" title="Confirm (not available)" disabled>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Confirm"
+                          className="rounded-lg hover:bg-primary/10 hover:text-primary"
+                          disabled={busy || isClosed || status === "confirmed"}
+                          onClick={() =>
+                            statusMutation.mutate({ id: r.id, status: "confirmed" })
+                          }
+                        >
                           <Check className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" title="Complete (not available)" disabled>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Mark completed"
+                          className="rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600"
+                          disabled={busy || isClosed}
+                          onClick={() =>
+                            statusMutation.mutate({ id: r.id, status: "completed" })
+                          }
+                        >
                           <CheckCheck className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" title="Reschedule (not available)" disabled>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Reschedule"
+                          className="rounded-lg hover:bg-violet-500/10 hover:text-violet-600"
+                          disabled={busy || isClosed}
+                          onClick={() => setRescheduleId(r.id)}
+                        >
                           <CalendarClock className="h-4 w-4" />
                         </Button>
                         <Button
                           size="icon"
                           variant="ghost"
-                          title="Cancel (not available)"
-                          disabled
-                          className="text-destructive"
+                          title="Cancel"
+                          disabled={busy || isClosed}
+                          className="rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => setCancelId(r.id)}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -322,6 +546,20 @@ function AppointmentsPage() {
         open={viewId !== null}
         onOpenChange={(o) => {
           if (!o) setViewId(null);
+        }}
+      />
+      <AdminRescheduleDialog
+        appointmentId={rescheduleId}
+        open={rescheduleId !== null}
+        onOpenChange={(o) => {
+          if (!o) setRescheduleId(null);
+        }}
+      />
+      <AdminCancelDialog
+        appointmentId={cancelId}
+        open={cancelId !== null}
+        onOpenChange={(o) => {
+          if (!o) setCancelId(null);
         }}
       />
     </div>

@@ -41,6 +41,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { PrescriptionEditorDialog } from "@/components/prescriptions/PrescriptionEditorDialog";
 import { fetchPrescriptionByAppointment } from "@/lib/prescriptions-api";
+import { GoogleMeetCard as MeetCard } from "@/components/appointments/GoogleMeetCard";
 
 type PatientRow = {
   id: string;
@@ -305,23 +306,14 @@ export function AppointmentDetailsDrawer({
                     label="Booked"
                     value={formatDateTimeStamp(appt.created_at)}
                   />
-                  {appt.meeting_url && !isCancelled && (
-                    <div className="flex items-start gap-2.5 py-1.5 text-sm">
-                      <Video className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-muted-foreground">Google Meet</p>
-                        <a
-                          href={appt.meeting_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-0.5 block break-all text-primary underline underline-offset-2"
-                        >
-                          {appt.meeting_url}
-                        </a>
-                      </div>
-                    </div>
-                  )}
                 </Section>
+
+                {appt.consultation_types?.mode === "online" && !isCancelled && (
+                  <MeetCard
+                    meetingUrl={appt.meeting_url ?? null}
+                    meetingStatus={appt.meeting_status ?? null}
+                  />
+                )}
 
                 {/* Patient */}
                 <Section title="Patient">

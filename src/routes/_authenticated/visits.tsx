@@ -16,6 +16,7 @@ import {
 } from "@/lib/booking-queries";
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 import { CancelAppointmentDialog } from "@/components/appointments/CancelAppointmentDialog";
+import { GoogleMeetCard } from "@/components/appointments/GoogleMeetCard";
 import { cn } from "@/lib/utils";
 import { PrescriptionViewDialog } from "@/components/prescriptions/PrescriptionViewDialog";
 import { fetchPublishedPrescriptionAppointmentIds } from "@/lib/prescriptions-api";
@@ -251,15 +252,15 @@ function VisitCard({
       {visit.meeting_url &&
         (visit.appointment_status ?? "").toLowerCase() !== "cancelled" &&
         (visit.appointment_status ?? "").toLowerCase() !== "canceled" && (
-          <a
-            href={visit.meeting_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonVariants({ size: "sm" }), "mt-4 h-10 w-full rounded-lg")}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Video className="mr-1.5 h-4 w-4" aria-hidden /> Join video consultation
-          </a>
+          <GoogleMeetCard
+            className="mt-4"
+            meetingUrl={visit.meeting_url}
+            meetingTime={
+              date && startTime
+                ? `${formatFullDate(date)}${endTime ? ` · ${formatTime(startTime)} – ${formatTime(endTime)}` : ` · ${formatTime(startTime)}`}`
+                : null
+            }
+          />
         )}
       {hasPrescription && (
         <Button
