@@ -451,8 +451,12 @@ function AppointmentsPage() {
               )}
               {filtered.map((r) => {
                 const patient = r.patient_id ? data?.patients.get(r.patient_id) : undefined;
+                const status = (r.appointment_status ?? "").toLowerCase();
+                const isClosed =
+                  status === "cancelled" || status === "canceled" || status === "completed";
+                const busy = busyId === r.id;
                 return (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} className="transition-colors hover:bg-muted/40">
                     <TableCell className="font-mono text-xs">{r.id.slice(0, 8)}</TableCell>
                     <TableCell className="font-medium">
                       {patient?.full_name ?? "—"}
@@ -479,25 +483,52 @@ function AppointmentsPage() {
                           size="icon"
                           variant="ghost"
                           title="View"
+                          className="rounded-lg hover:bg-primary/10 hover:text-primary"
                           onClick={() => setViewId(r.id)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" title="Confirm (not available)" disabled>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Confirm"
+                          className="rounded-lg hover:bg-primary/10 hover:text-primary"
+                          disabled={busy || isClosed || status === "confirmed"}
+                          onClick={() =>
+                            statusMutation.mutate({ id: r.id, status: "confirmed" })
+                          }
+                        >
                           <Check className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" title="Complete (not available)" disabled>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Mark completed"
+                          className="rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600"
+                          disabled={busy || isClosed}
+                          onClick={() =>
+                            statusMutation.mutate({ id: r.id, status: "completed" })
+                          }
+                        >
                           <CheckCheck className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" title="Reschedule (not available)" disabled>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Reschedule"
+                          className="rounded-lg hover:bg-violet-500/10 hover:text-violet-600"
+                          disabled={busy || isClosed}
+                          onClick={() => setRescheduleId(r.id)}
+                        >
                           <CalendarClock className="h-4 w-4" />
                         </Button>
                         <Button
                           size="icon"
                           variant="ghost"
-                          title="Cancel (not available)"
-                          disabled
-                          className="text-destructive"
+                          title="Cancel"
+                          disabled={busy || isClosed}
+                          className="rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => setCancelId(r.id)}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -515,6 +546,20 @@ function AppointmentsPage() {
         open={viewId !== null}
         onOpenChange={(o) => {
           if (!o) setViewId(null);
+        }}
+      />
+      <AdminRescheduleDialog
+        appointmentId={rescheduleId}
+        open={rescheduleId !== null}
+        onOpenChange={(o) => {
+          if (!o) setRescheduleId(null);
+        }}
+      />
+      <AdminCancelDialog
+        appointmentId={cancelId}
+        open={cancelId !== null}
+        onOpenChange={(o) => {
+          if (!o) setCancelId(null);
         }}
       />
     </div>
