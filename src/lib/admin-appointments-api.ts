@@ -21,39 +21,52 @@ export async function setAppointmentStatus(
   }
 }
 
-/**
- * Admin-side reschedule. Reuses the same RPCs the patient reschedule flow
- * relies on (no fee), then asks the server to move the Google Calendar /
- * Meet event when one exists.
- */
-export async function adminRescheduleAppointment(input: {
-  appointmentId: string;
-  newSlotId: string;
-}): Promise<void> {
-  const { error: freeErr } = await db.rpc("free_stale_slot_reservations", {
-    p_slot_id: input.newSlotId,
-  });
-  if (freeErr) throw freeErr;
-
-  const { error } = await db.rpc("reschedule_appointment", {
-    p_appointment_id: input.appointmentId,
-    p_new_slot_id: input.newSlotId,
-  });
-  if (error) throw error;
-
-  // Best-effort meeting sync — never blocks the reschedule.
+async function adminPost(path: string, body: Record<string, unknown>, fallback: string) {
+  const { data: sess } = await supabase.auth.getSession();
+  const token = sess?.session?.access_token;
+  let res: Response;
   try {
-    const { data: sess } = await supabase.auth.getSession();
-    const token = sess?.session?.access_token;
-    await fetch("/api/public/appointments/sync-meeting", {
+    res = await fetch(path, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ appointment_id: input.appointmentId }),
+      body: JSON.stringify(body),
     });
   } catch {
-    // ignore
+    throw new Error("Please try again.");
   }
+  const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+  if (!res.ok) throw new Error(payload?.error || fallback);
+  return payload;
+}
+
+/**
+ * Admin-side reschedule (no fee). Uses the admin-authorized server route —
+ * the patient RPC rejects admins because it enforces patient_id = auth.uid().
+ * The route reserves the new slot, moves the appointment, releases the old
+ * slot and re-syncs the Google Calendar / Meet event.
+ */
+export async function adminRescheduleAppointment(input: {
+  appointmentId: string;
+  newSlotId: string;
+}): Promise<void> {
+  await adminPost(
+    "/api/public/admin/appointments/reschedule",
+    { appointment_id: input.appointmentId, new_slot_id: input.newSlotId },
+    "Unable to reschedule appointment. Please try again.",
+  );
+}
+
+/** Admin-side cancellation — admin-authorized route, releases the slot. */
+export async function adminCancelAppointment(input: {
+  appointmentId: string;
+  reason?: string | null;
+}): Promise<void> {
+  await adminPost(
+    "/api/public/admin/appointments/cancel",
+    { appointment_id: input.appointmentId, reason: input.reason ?? null },
+    "Unable to cancel appointment. Please try again.",
+  );
 }
