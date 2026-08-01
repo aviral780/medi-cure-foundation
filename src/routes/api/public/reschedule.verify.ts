@@ -71,13 +71,6 @@ export const Route = createFileRoute("/api/public/reschedule/verify")({
           });
           if (updErr) return jsonError(500, `Could not update payment: ${updErr.message}`);
 
-          // Free stale (cancelled/completed/rescheduled) references to the
-          // target slot so the reschedule swap doesn't hit a UNIQUE
-          // (availability_slot_id) violation on public.appointments.
-          await supabase.rpc("free_stale_slot_reservations", {
-            p_slot_id: body.newSlotId,
-          });
-
           // Perform the reschedule — existing RPC releases the old slot and
           // reserves the new one atomically. If it fails (e.g. slot just taken),
           // the ₹100 fee stays recorded as paid so the user can retry with a
@@ -86,7 +79,10 @@ export const Route = createFileRoute("/api/public/reschedule/verify")({
             p_appointment_id: body.appointmentId,
             p_new_slot_id: body.newSlotId,
           });
-          if (rpcErr) return jsonError(500, `Could not reschedule: ${rpcErr.message}`);
+          if (rpcErr) {
+            console.error("[reschedule.verify]", rpcErr.message);
+            return jsonError(409, "Unable to reschedule because the slot is unavailable.");
+          }
 
           // Move the Google Calendar event (and keep the same Meet link) for
           // online consultations. Best-effort — never fails the reschedule.
