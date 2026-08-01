@@ -48,6 +48,8 @@ import { Route as ApiPublicAppointmentsSyncMeetingRouteImport } from './routes/a
 import { Route as ApiPublicAppointmentsReleasePendingRouteImport } from './routes/api/public/appointments.release-pending'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
 import { Route as AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport } from './routes/_authenticated/appointments.$appointmentId.reschedule'
+import { Route as ApiPublicAdminAppointmentsRescheduleRouteImport } from './routes/api/public/admin/appointments.reschedule'
+import { Route as ApiPublicAdminAppointmentsCancelRouteImport } from './routes/api/public/admin/appointments.cancel'
 
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
@@ -261,6 +263,18 @@ const AuthenticatedAppointmentsAppointmentIdRescheduleRoute =
     path: '/appointments/$appointmentId/reschedule',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicAdminAppointmentsRescheduleRoute =
+  ApiPublicAdminAppointmentsRescheduleRouteImport.update({
+    id: '/api/public/admin/appointments/reschedule',
+    path: '/api/public/admin/appointments/reschedule',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAdminAppointmentsCancelRoute =
+  ApiPublicAdminAppointmentsCancelRouteImport.update({
+    id: '/api/public/admin/appointments/cancel',
+    path: '/api/public/admin/appointments/cancel',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -301,6 +315,8 @@ export interface FileRoutesByFullPath {
   '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
   '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
   '/appointments/$appointmentId/': typeof AuthenticatedAppointmentsAppointmentIdIndexRoute
+  '/api/public/admin/appointments/cancel': typeof ApiPublicAdminAppointmentsCancelRoute
+  '/api/public/admin/appointments/reschedule': typeof ApiPublicAdminAppointmentsRescheduleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -340,6 +356,8 @@ export interface FileRoutesByTo {
   '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
   '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdIndexRoute
+  '/api/public/admin/appointments/cancel': typeof ApiPublicAdminAppointmentsCancelRoute
+  '/api/public/admin/appointments/reschedule': typeof ApiPublicAdminAppointmentsRescheduleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -382,6 +400,8 @@ export interface FileRoutesById {
   '/api/public/reschedule/create-order': typeof ApiPublicRescheduleCreateOrderRoute
   '/api/public/reschedule/verify': typeof ApiPublicRescheduleVerifyRoute
   '/_authenticated/appointments/$appointmentId/': typeof AuthenticatedAppointmentsAppointmentIdIndexRoute
+  '/api/public/admin/appointments/cancel': typeof ApiPublicAdminAppointmentsCancelRoute
+  '/api/public/admin/appointments/reschedule': typeof ApiPublicAdminAppointmentsRescheduleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -424,6 +444,8 @@ export interface FileRouteTypes {
     | '/api/public/reschedule/create-order'
     | '/api/public/reschedule/verify'
     | '/appointments/$appointmentId/'
+    | '/api/public/admin/appointments/cancel'
+    | '/api/public/admin/appointments/reschedule'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -463,6 +485,8 @@ export interface FileRouteTypes {
     | '/api/public/reschedule/create-order'
     | '/api/public/reschedule/verify'
     | '/appointments/$appointmentId'
+    | '/api/public/admin/appointments/cancel'
+    | '/api/public/admin/appointments/reschedule'
   id:
     | '__root__'
     | '/'
@@ -504,6 +528,8 @@ export interface FileRouteTypes {
     | '/api/public/reschedule/create-order'
     | '/api/public/reschedule/verify'
     | '/_authenticated/appointments/$appointmentId/'
+    | '/api/public/admin/appointments/cancel'
+    | '/api/public/admin/appointments/reschedule'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -527,6 +553,8 @@ export interface RootRouteChildren {
   ApiPublicPaymentsVerifyRoute: typeof ApiPublicPaymentsVerifyRoute
   ApiPublicRescheduleCreateOrderRoute: typeof ApiPublicRescheduleCreateOrderRoute
   ApiPublicRescheduleVerifyRoute: typeof ApiPublicRescheduleVerifyRoute
+  ApiPublicAdminAppointmentsCancelRoute: typeof ApiPublicAdminAppointmentsCancelRoute
+  ApiPublicAdminAppointmentsRescheduleRoute: typeof ApiPublicAdminAppointmentsRescheduleRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -804,6 +832,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRescheduleRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/admin/appointments/reschedule': {
+      id: '/api/public/admin/appointments/reschedule'
+      path: '/api/public/admin/appointments/reschedule'
+      fullPath: '/api/public/admin/appointments/reschedule'
+      preLoaderRoute: typeof ApiPublicAdminAppointmentsRescheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/admin/appointments/cancel': {
+      id: '/api/public/admin/appointments/cancel'
+      path: '/api/public/admin/appointments/cancel'
+      fullPath: '/api/public/admin/appointments/cancel'
+      preLoaderRoute: typeof ApiPublicAdminAppointmentsCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -892,6 +934,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPaymentsVerifyRoute: ApiPublicPaymentsVerifyRoute,
   ApiPublicRescheduleCreateOrderRoute: ApiPublicRescheduleCreateOrderRoute,
   ApiPublicRescheduleVerifyRoute: ApiPublicRescheduleVerifyRoute,
+  ApiPublicAdminAppointmentsCancelRoute: ApiPublicAdminAppointmentsCancelRoute,
+  ApiPublicAdminAppointmentsRescheduleRoute:
+    ApiPublicAdminAppointmentsRescheduleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

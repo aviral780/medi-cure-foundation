@@ -80,11 +80,14 @@ export function AdminRescheduleDialog({
         queryClient.invalidateQueries({ queryKey: ["admin-reschedule-slots"] }),
         queryClient.invalidateQueries({ queryKey: ["visits"] }),
         queryClient.invalidateQueries({ queryKey: ["slots"] }),
+        queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-reschedule-appt", appointmentId] }),
       ]);
       setSelectedSlot(null);
       onOpenChange(false);
     },
-    onError: (err: Error) => toast.error(err.message || "Couldn't reschedule appointment"),
+    onError: (err: Error) =>
+      toast.error(err.message || "Unable to reschedule appointment. Please try again."),
   });
 
   const isOnline = appt?.consultation_types?.mode === "online";
