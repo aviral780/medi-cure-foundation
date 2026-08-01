@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { adminCancelAppointment } from "@/lib/admin-appointments-api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 
-/** Admin-side cancellation — reuses the existing cancel_appointment RPC. */
+/** Admin-side cancellation — uses the admin-authorized server route. */
 export function AdminCancelDialog({
   appointmentId,
   open,
@@ -30,15 +31,11 @@ export function AdminCancelDialog({
   const mutation = useMutation({
     mutationFn: async () => {
       if (!appointmentId) throw new Error("No appointment selected.");
-      const { error } = await (supabase as any).rpc("cancel_appointment", {
-        p_appointment_id: appointmentId,
-        p_cancellation_reason: reason.trim() || null,
-      });
-      if (error) throw error;
+      await adminCancelAppointment({ appointmentId, reason: reason.trim() || null });
     },
     onSuccess: async () => {
       toast.success("Appointment cancelled");
-      // Best-effort cancellation email + Meet cleanup via the existing endpoint.
+      // Best-effort cancellation email (Meet cleanup already handled server-side).
       try {
         const { data: sess } = await supabase.auth.getSession();
         const token = sess?.session?.access_token;
@@ -59,11 +56,13 @@ export function AdminCancelDialog({
         queryClient.invalidateQueries({ queryKey: ["admin-appt-detail", appointmentId] }),
         queryClient.invalidateQueries({ queryKey: ["visits"] }),
         queryClient.invalidateQueries({ queryKey: ["slots"] }),
+        queryClient.invalidateQueries({ queryKey: ["appointment", appointmentId] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-reschedule-slots"] }),
       ]);
       setReason("");
       onOpenChange(false);
     },
-    onError: (err: Error) => toast.error(err.message || "Couldn't cancel appointment"),
+    onError: (err: Error) => toast.error(err.message || "Unable to cancel appointment."),
   });
 
   return (
