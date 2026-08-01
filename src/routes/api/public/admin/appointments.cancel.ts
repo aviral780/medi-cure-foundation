@@ -53,10 +53,17 @@ export const Route = createFileRoute("/api/public/admin/appointments/cancel")({
           };
           if (body.reason) update.cancellation_reason = body.reason;
 
-          const { error: updErr } = await db
+          let { error: updErr } = await db
             .from("appointments")
             .update(update)
             .eq("id", appointmentId);
+          if (updErr && body.reason) {
+            // Retry without the optional reason column if it isn't present.
+            ({ error: updErr } = await db
+              .from("appointments")
+              .update({ appointment_status: "cancelled" })
+              .eq("id", appointmentId));
+          }
           if (updErr) {
             console.error("[admin.cancel]", updErr.message);
             return jsonError(500, "Unable to cancel appointment. Please try again.");
