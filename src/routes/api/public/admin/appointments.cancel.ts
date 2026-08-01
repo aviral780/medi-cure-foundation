@@ -46,9 +46,10 @@ export const Route = createFileRoute("/api/public/admin/appointments/cancel")({
             return jsonError(409, "Appointment has already been cancelled.");
           }
 
+          // NOTE: availability_slot_id is NOT NULL — keep the reference and
+          // just free the slot below.
           const update: Record<string, unknown> = {
             appointment_status: "cancelled",
-            availability_slot_id: null,
           };
           if (body.reason) update.cancellation_reason = body.reason;
 
