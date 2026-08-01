@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -56,6 +57,11 @@ import { Route as ApiPublicAdminAppointmentsCancelRouteImport } from './routes/a
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
@@ -294,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/account': typeof AuthenticatedAccountRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -337,6 +344,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/account': typeof AuthenticatedAccountRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -383,6 +391,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
@@ -429,6 +438,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/how-it-works'
+    | '/reset-password'
     | '/signup'
     | '/account'
     | '/payments'
@@ -472,6 +482,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/how-it-works'
+    | '/reset-password'
     | '/signup'
     | '/account'
     | '/payments'
@@ -517,6 +528,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/how-it-works'
+    | '/reset-password'
     | '/signup'
     | '/_authenticated/account'
     | '/_authenticated/payments'
@@ -563,6 +575,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
   DoctorsIndexRoute: typeof DoctorsIndexRoute
   DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
@@ -590,6 +603,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -956,6 +976,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
   DoctorsIndexRoute: DoctorsIndexRoute,
   DoctorsDoctorIdIndexRoute: DoctorsDoctorIdIndexRoute,
