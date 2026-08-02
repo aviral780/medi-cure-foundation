@@ -1,21 +1,51 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, Phone, ShieldCheck } from "lucide-react";
+import type { ConfirmationResult, RecaptchaVerifier } from "firebase/auth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/lib/supabase";
-import { friendlyAuthError, normalizePhone } from "@/lib/auth-routing";
+import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { normalizePhone } from "@/lib/auth-routing";
+
+function friendlyFirebaseError(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? "";
+  const message = err instanceof Error ? err.message : String(err ?? "");
+  switch (code) {
+    case "auth/invalid-phone-number":
+      return "That mobile number looks invalid. Check it and try again.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Please wait a few minutes and try again.";
+    case "auth/quota-exceeded":
+      return "SMS limit reached for now. Please try again later.";
+    case "auth/invalid-verification-code":
+      return "That code is incorrect. Please re-enter it.";
+    case "auth/code-expired":
+      return "That code has expired. Request a new one.";
+    case "auth/captcha-check-failed":
+    case "auth/missing-app-credential":
+      return "Verification check failed. Reload the page and try again.";
+    case "auth/network-request-failed":
+      return "Network problem — check your connection and try again.";
+    case "auth/operation-not-allowed":
+      return "Phone sign-in isn't enabled yet. Please use Google or email for now.";
+    default:
+      return message || "Something went wrong. Please try again.";
+  }
+}
 
 export function PhoneAuthDialog({
   open,
   onOpenChange,
   onVerified,
+  fullName,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onVerified: (userId: string) => void | Promise<void>;
+  fullName?: string;
 }) {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
@@ -25,6 +55,10 @@ export function PhoneAuthDialog({
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
 
+  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+  const confirmationRef = useRef<ConfirmationResult | null>(null);
+  const containerId = "medicure-recaptcha-container";
+
   useEffect(() => {
     if (!open) {
       setStep("phone");
@@ -32,6 +66,13 @@ export function PhoneAuthDialog({
       setError(null);
       setBusy(false);
       setCooldown(0);
+      confirmationRef.current = null;
+      try {
+        recaptchaRef.current?.clear();
+      } catch {
+        /* ignore */
+      }
+      recaptchaRef.current = null;
     }
   }, [open]);
 
@@ -41,44 +82,86 @@ export function PhoneAuthDialog({
     return () => clearTimeout(t);
   }, [cooldown]);
 
+  async function getVerifier(): Promise<RecaptchaVerifier> {
+    if (recaptchaRef.current) return recaptchaRef.current;
+    const { RecaptchaVerifier } = await import("firebase/auth");
+    const verifier = new RecaptchaVerifier(getFirebaseAuth(), containerId, { size: "invisible" });
+    await verifier.render();
+    recaptchaRef.current = verifier;
+    return verifier;
+  }
+
   async function sendOtp(target?: string) {
+    if (busy || cooldown > 0) return; // guards duplicate OTP requests
     const normalized = normalizePhone(target ?? phone);
     if (!normalized) {
       setError("Enter a valid mobile number (e.g. 98765 43210 or +919876543210).");
       return;
     }
+    if (!isFirebaseConfigured) {
+      setError("Phone sign-in isn't available right now. Please use Google or email.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({ phone: normalized });
-      if (otpError) throw otpError;
+      const { signInWithPhoneNumber } = await import("firebase/auth");
+      const verifier = await getVerifier();
+      confirmationRef.current = await signInWithPhoneNumber(getFirebaseAuth(), normalized, verifier);
       setSentTo(normalized);
       setStep("otp");
       setCode("");
       setCooldown(45);
     } catch (err) {
-      setError(friendlyAuthError(err));
+      try {
+        recaptchaRef.current?.clear();
+      } catch {
+        /* ignore */
+      }
+      recaptchaRef.current = null;
+      setError(friendlyFirebaseError(err));
     } finally {
       setBusy(false);
     }
   }
 
   async function verifyOtp(token: string) {
+    if (busy) return;
+    if (!confirmationRef.current) {
+      setError("Please request a new code.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        phone: sentTo,
-        token,
-        type: "sms",
+      const credential = await confirmationRef.current.confirm(token);
+      const idToken = await credential.user.getIdToken();
+
+      // Firebase verified the number — Supabase owns the app session.
+      const res = await fetch("/api/public/auth/phone-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, fullName }),
       });
-      if (verifyError) throw verifyError;
+      const payload = (await res.json().catch(() => null)) as
+        | { token_hash?: string; email?: string; error?: string }
+        | null;
+      if (!res.ok || !payload?.token_hash) {
+        throw new Error(payload?.error ?? "Could not complete sign in. Please try again.");
+      }
+
+      const { data, error: sessionError } = await supabase.auth.verifyOtp({
+        token_hash: payload.token_hash,
+        type: "magiclink",
+      });
+      if (sessionError) throw sessionError;
       const userId = data.user?.id;
-      if (!userId) throw new Error("Verification failed. Please try again.");
+      if (!userId) throw new Error("Could not start your session. Please try again.");
+
       await onVerified(userId);
       onOpenChange(false);
     } catch (err) {
-      setError(friendlyAuthError(err));
+      setError(friendlyFirebaseError(err));
       setBusy(false);
     }
   }
@@ -164,6 +247,7 @@ export function PhoneAuthDialog({
                 onClick={() => {
                   setStep("phone");
                   setError(null);
+                  confirmationRef.current = null;
                 }}
               >
                 Change number
@@ -179,6 +263,9 @@ export function PhoneAuthDialog({
             </div>
           </div>
         )}
+
+        {/* Invisible reCAPTCHA host required by Firebase phone auth. */}
+        <div id={containerId} />
       </DialogContent>
     </Dialog>
   );
