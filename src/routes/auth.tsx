@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthDivider, AuthShell, PasswordField, SocialAuthButtons } from "@/components/auth/AuthPieces";
 import { PhoneAuthDialog } from "@/components/auth/PhoneAuthDialog";
+import { openOAuthUrl, signInWithProvider } from "@/lib/oauth";
 import {
-  authRedirectUrl,
   friendlyAuthError,
   isValidEmail,
   resolveLandingRoute,
@@ -38,6 +38,7 @@ function SignInPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [blockedUrl, setBlockedUrl] = useState<string | null>(null);
 
   async function go(userId: string) {
     const to = await resolveLandingRoute(userId);
@@ -53,15 +54,18 @@ function SignInPage() {
   async function onGoogle() {
     setGoogleLoading(true);
     setError(null);
-    try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: authRedirectUrl("/account") },
-      });
-      if (oauthError) throw oauthError;
-    } catch (err) {
-      setError(friendlyAuthError(err));
+    setBlockedUrl(null);
+    const outcome = await signInWithProvider("google", "/account");
+    if (outcome.status === "error") {
+      setError(friendlyAuthError(new Error(outcome.message)));
       setGoogleLoading(false);
+    } else if (outcome.status === "popup-blocked") {
+      setBlockedUrl(outcome.url);
+      setError("Your browser blocked the sign-in window.");
+      setGoogleLoading(false);
+    } else if (outcome.status === "new-tab") {
+      setGoogleLoading(false);
+      toast.success("Continue signing in with Google in the new tab.");
     }
   }
 
@@ -153,6 +157,17 @@ function SignInPage() {
           <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
           </p>
+        ) : null}
+
+        {blockedUrl ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full rounded-xl"
+            onClick={() => openOAuthUrl(blockedUrl)}
+          >
+            Continue in New Tab
+          </Button>
         ) : null}
 
         <Button type="submit" disabled={submitting} className="h-12 w-full rounded-xl text-base">
