@@ -9,12 +9,13 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env['VITE_FIREBASE_API_KEY'] ?? "",
-  authDomain: import.meta.env['VITE_FIREBASE_AUTH_DOMAIN'] ?? "",
-  projectId: import.meta.env['VITE_FIREBASE_PROJECT_ID'] ?? "",
-  storageBucket: import.meta.env['VITE_FIREBASE_STORAGE_BUCKET'] ?? "",
-  messagingSenderId: import.meta.env['VITE_FIREBASE_MESSAGING_SENDER_ID'] ?? "",
-  appId: import.meta.env['VITE_FIREBASE_APP_ID'] ?? "",
+  apiKey: import.meta.env['VITE_FIREBASE_API_KEY'] ?? "AIzaSyAZ7KWWUhkaHFDy6cbWZ-ISMfzBv4KvUu0",
+  authDomain: import.meta.env['VITE_FIREBASE_AUTH_DOMAIN'] ?? "vardhman-medicare-45655.firebaseapp.com",
+  projectId: import.meta.env['VITE_FIREBASE_PROJECT_ID'] ?? "vardhman-medicare-45655",
+  storageBucket:
+    import.meta.env['VITE_FIREBASE_STORAGE_BUCKET'] ?? "vardhman-medicare-45655.firebasestorage.app",
+  messagingSenderId: import.meta.env['VITE_FIREBASE_MESSAGING_SENDER_ID'] ?? "600666345303",
+  appId: import.meta.env['VITE_FIREBASE_APP_ID'] ?? "1:600666345303:web:9122a5c83f21d03e05b812",
 };
 
 /** True once the Firebase web config has been supplied. */
