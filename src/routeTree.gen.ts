@@ -47,6 +47,7 @@ import { Route as ApiPublicNotificationsAppointmentCancelledRouteImport } from '
 import { Route as ApiPublicGoogleStatusRouteImport } from './routes/api/public/google.status'
 import { Route as ApiPublicGoogleOauthStartRouteImport } from './routes/api/public/google.oauth-start'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google.oauth-callback'
+import { Route as ApiPublicAuthPhoneSessionRouteImport } from './routes/api/public/auth/phone-session'
 import { Route as ApiPublicAppointmentsSyncMeetingRouteImport } from './routes/api/public/appointments.sync-meeting'
 import { Route as ApiPublicAppointmentsReleasePendingRouteImport } from './routes/api/public/appointments.release-pending'
 import { Route as AuthenticatedDoctorsDoctorIdBookRouteImport } from './routes/_authenticated/doctors.$doctorId.book'
@@ -257,6 +258,12 @@ const ApiPublicGoogleOauthCallbackRoute =
     path: '/api/public/google/oauth-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAuthPhoneSessionRoute =
+  ApiPublicAuthPhoneSessionRouteImport.update({
+    id: '/api/public/auth/phone-session',
+    path: '/api/public/auth/phone-session',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAppointmentsSyncMeetingRoute =
   ApiPublicAppointmentsSyncMeetingRouteImport.update({
     id: '/api/public/appointments/sync-meeting',
@@ -324,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
   '/api/public/appointments/sync-meeting': typeof ApiPublicAppointmentsSyncMeetingRoute
+  '/api/public/auth/phone-session': typeof ApiPublicAuthPhoneSessionRoute
   '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
   '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
@@ -368,6 +376,7 @@ export interface FileRoutesByTo {
   '/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
   '/api/public/appointments/sync-meeting': typeof ApiPublicAppointmentsSyncMeetingRoute
+  '/api/public/auth/phone-session': typeof ApiPublicAuthPhoneSessionRoute
   '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
   '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
@@ -415,6 +424,7 @@ export interface FileRoutesById {
   '/_authenticated/doctors/$doctorId/book': typeof AuthenticatedDoctorsDoctorIdBookRoute
   '/api/public/appointments/release-pending': typeof ApiPublicAppointmentsReleasePendingRoute
   '/api/public/appointments/sync-meeting': typeof ApiPublicAppointmentsSyncMeetingRoute
+  '/api/public/auth/phone-session': typeof ApiPublicAuthPhoneSessionRoute
   '/api/public/google/oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/google/oauth-start': typeof ApiPublicGoogleOauthStartRoute
   '/api/public/google/status': typeof ApiPublicGoogleStatusRoute
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
     | '/api/public/appointments/sync-meeting'
+    | '/api/public/auth/phone-session'
     | '/api/public/google/oauth-callback'
     | '/api/public/google/oauth-start'
     | '/api/public/google/status'
@@ -506,6 +517,7 @@ export interface FileRouteTypes {
     | '/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
     | '/api/public/appointments/sync-meeting'
+    | '/api/public/auth/phone-session'
     | '/api/public/google/oauth-callback'
     | '/api/public/google/oauth-start'
     | '/api/public/google/status'
@@ -552,6 +564,7 @@ export interface FileRouteTypes {
     | '/_authenticated/doctors/$doctorId/book'
     | '/api/public/appointments/release-pending'
     | '/api/public/appointments/sync-meeting'
+    | '/api/public/auth/phone-session'
     | '/api/public/google/oauth-callback'
     | '/api/public/google/oauth-start'
     | '/api/public/google/status'
@@ -581,6 +594,7 @@ export interface RootRouteChildren {
   DoctorsDoctorIdIndexRoute: typeof DoctorsDoctorIdIndexRoute
   ApiPublicAppointmentsReleasePendingRoute: typeof ApiPublicAppointmentsReleasePendingRoute
   ApiPublicAppointmentsSyncMeetingRoute: typeof ApiPublicAppointmentsSyncMeetingRoute
+  ApiPublicAuthPhoneSessionRoute: typeof ApiPublicAuthPhoneSessionRoute
   ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
   ApiPublicGoogleOauthStartRoute: typeof ApiPublicGoogleOauthStartRoute
   ApiPublicGoogleStatusRoute: typeof ApiPublicGoogleStatusRoute
@@ -864,6 +878,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGoogleOauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth/phone-session': {
+      id: '/api/public/auth/phone-session'
+      path: '/api/public/auth/phone-session'
+      fullPath: '/api/public/auth/phone-session'
+      preLoaderRoute: typeof ApiPublicAuthPhoneSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/appointments/sync-meeting': {
       id: '/api/public/appointments/sync-meeting'
       path: '/api/public/appointments/sync-meeting'
@@ -983,6 +1004,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAppointmentsReleasePendingRoute:
     ApiPublicAppointmentsReleasePendingRoute,
   ApiPublicAppointmentsSyncMeetingRoute: ApiPublicAppointmentsSyncMeetingRoute,
+  ApiPublicAuthPhoneSessionRoute: ApiPublicAuthPhoneSessionRoute,
   ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
   ApiPublicGoogleOauthStartRoute: ApiPublicGoogleOauthStartRoute,
   ApiPublicGoogleStatusRoute: ApiPublicGoogleStatusRoute,
@@ -1004,13 +1026,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
