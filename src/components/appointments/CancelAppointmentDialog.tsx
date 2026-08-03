@@ -55,6 +55,8 @@ export function CancelAppointmentDialog({
       try {
         const { data: sess } = await supabase.auth.getSession();
         const token = sess?.session?.access_token;
+        const { isNotificationEnabled } = await import("@/lib/notification-settings");
+        if (!isNotificationEnabled("email_confirmations") || !isNotificationEnabled("cancellation_notifications")) return;
         await fetch("/api/public/notifications/appointment-cancelled", {
           method: "POST",
           headers: {
