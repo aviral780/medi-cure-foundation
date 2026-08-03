@@ -118,6 +118,8 @@ function PaymentPage() {
               try {
                 const { data: sess } = await supabase.auth.getSession();
                 const token = sess?.session?.access_token;
+                const { isNotificationEnabled } = await import("@/lib/notification-settings");
+                if (!isNotificationEnabled("email_confirmations")) return;
                 await fetch("/api/public/notifications/appointment-confirmed", {
                   method: "POST",
                   headers: {

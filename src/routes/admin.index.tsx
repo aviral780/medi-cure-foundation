@@ -25,6 +25,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { StatCard } from "@/components/admin/StatCard";
+import { DailyClinicSummary } from "@/components/admin/DailyClinicSummary";
 import { StatusBadge, PaymentBadge } from "@/components/appointments/StatusBadges";
 import {
   fetchAdminStats,
@@ -81,10 +82,10 @@ function DashboardPage() {
   const s = stats.data;
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+    <div className="space-y-8">
+      <header className="border-b border-border/50 pb-5">
+        <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
           {clinic.name} — live overview of clinic activity, appointments and revenue.
         </p>
       </header>
@@ -106,7 +107,7 @@ function DashboardPage() {
         <StatCard label="Total Revenue" value={s ? formatINR(s.totalRevenue) : "—"} icon={TrendingUp} accent="success" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)]">
           <div>
             <h2 className="text-base font-semibold">Appointment Trend</h2>
@@ -158,7 +159,7 @@ function DashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)]">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
@@ -216,6 +217,8 @@ function DashboardPage() {
           </table>
         </div>
       </div>
+
+      <DailyClinicSummary />
     </div>
   );
 }

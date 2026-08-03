@@ -221,28 +221,6 @@ function ConsultationTypesPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-1.5 pl-3">
-            <Sparkles className="h-4 w-4 text-muted-foreground" />
-            <Select value={seedDoctorId} onValueChange={setSeedDoctorId}>
-              <SelectTrigger className="h-8 w-[200px] border-0 bg-transparent px-2 shadow-none focus:ring-0">
-                <SelectValue placeholder="Seed defaults for…" />
-              </SelectTrigger>
-              <SelectContent>
-                {doctorOptions.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="h-8 rounded-lg"
-              disabled={!seedDoctor || seed.isPending}
-              onClick={() => seedDoctor && seed.mutate(seedDoctor.id)}
-            >
-              {seed.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Seed"}
-            </Button>
-          </div>
           <Button className="h-10 rounded-xl" onClick={openCreate} disabled={!doctorOptions.length}>
             <Plus className="mr-2 h-4 w-4" /> Add type
           </Button>

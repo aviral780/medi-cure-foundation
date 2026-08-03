@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarCheck, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  NOTIFICATION_DEFAULTS, setNotificationSetting, useNotificationSettings,
+  type NotificationSettingKey,
+} from "@/lib/notification-settings";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -56,15 +60,7 @@ function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
-            <div className="space-y-4">
-              <ToggleRow title="Email confirmations" desc="Send booking confirmation emails to patients." defaultChecked />
-              <ToggleRow title="Reschedule notifications" desc="Notify patients when their appointment is moved." defaultChecked />
-              <ToggleRow title="Cancellation notifications" desc="Notify patients when an appointment is cancelled." defaultChecked />
-              <ToggleRow title="Daily digest to admins" desc="Send a summary of the day to admin users." />
-              <ToggleRow title="SMS reminders" desc="Send SMS reminders 1 hour before appointment." />
-            </div>
-          </section>
+          <NotificationsTab />
         </TabsContent>
 
         <TabsContent value="integrations">
@@ -147,15 +143,69 @@ function GoogleCalendarTab() {
   );
 }
 
-function ToggleRow({ title, desc, defaultChecked }: { title: string; desc: string; defaultChecked?: boolean }) {
+const NOTIFICATION_ROWS: Array<{
+  key: NotificationSettingKey; title: string; desc: string; note?: string;
+}> = [
+  { key: "email_confirmations", title: "Email confirmations", desc: "Send booking, confirmation, reschedule and cancellation emails to patients." },
+  { key: "reschedule_notifications", title: "Reschedule notifications", desc: "Notify patients whenever their appointment date or time changes." },
+  { key: "cancellation_notifications", title: "Cancellation notifications", desc: "Notify patients whenever an appointment is cancelled." },
+  { key: "daily_digest", title: "Daily digest to admins", desc: "Generate one concise daily summary of clinic activity for admins." },
+  { key: "sms_reminders", title: "SMS reminders", desc: "Send a reminder SMS one hour before each appointment.", note: "Delivery provider not connected yet — schedule is prepared." },
+];
+
+function NotificationsTab() {
+  const settings = useNotificationSettings();
+
+  function onToggle(key: NotificationSettingKey, title: string, value: boolean) {
+    setNotificationSetting(key, value);
+    toast.success(`${title} ${value ? "enabled" : "disabled"}`);
+  }
+
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-border/60 p-4">
-      <div className="min-w-0">
-        <div className="text-sm font-medium">{title}</div>
-        <div className="text-xs text-muted-foreground">{desc}</div>
+    <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
+      <div className="mb-5">
+        <h2 className="text-base font-semibold">Notifications</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Changes save automatically. Defaults:{" "}
+          {Object.values(NOTIFICATION_DEFAULTS).filter(Boolean).length} of{" "}
+          {Object.keys(NOTIFICATION_DEFAULTS).length} enabled.
+        </p>
       </div>
-      <Switch defaultChecked={defaultChecked} />
-    </div>
+      <div className="space-y-3">
+        {NOTIFICATION_ROWS.map((row) => {
+          const on = settings[row.key];
+          return (
+            <div
+              key={row.key}
+              className="flex items-start justify-between gap-4 rounded-2xl border border-border/60 p-4 transition-colors hover:border-primary/40 hover:bg-muted/40"
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium">{row.title}</span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+                      on
+                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${on ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                    {on ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.desc}</p>
+                {row.note && <p className="mt-1 text-[11px] text-muted-foreground/80">{row.note}</p>}
+              </div>
+              <Switch
+                checked={on}
+                aria-label={row.title}
+                onCheckedChange={(v) => onToggle(row.key, row.title, v)}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
