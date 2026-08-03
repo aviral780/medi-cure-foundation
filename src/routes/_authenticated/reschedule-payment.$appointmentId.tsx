@@ -115,6 +115,8 @@ function ReschedulePaymentPage() {
                 const { supabase } = await import("@/lib/supabase");
                 const { data: sess } = await supabase.auth.getSession();
                 const bearer = sess?.session?.access_token;
+                const { isNotificationEnabled } = await import("@/lib/notification-settings");
+                if (!isNotificationEnabled("email_confirmations") || !isNotificationEnabled("reschedule_notifications")) return;
                 await fetch("/api/public/notifications/appointment-rescheduled", {
                   method: "POST",
                   headers: {
