@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Calendar, Home, Stethoscope, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { useClinicSettings } from "@/lib/clinic-settings";
+import { CareHopWidget } from "@/components/carehop/CareHopWidget";
 
 interface AppShellProps {
   children: ReactNode;
@@ -68,6 +69,8 @@ export function AppShell({ children }: AppShellProps) {
           })}
         </ul>
       </nav>
+
+      <CareHopWidget />
     </div>
   );
 }
