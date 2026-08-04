@@ -156,8 +156,48 @@ function fuzzyEqual(a: string, b: string): boolean {
   return levenshtein(a, b) <= allowed;
 }
 
+let VOCAB: string[] | null = null;
+function vocabulary(): string[] {
+  if (VOCAB) return VOCAB;
+  const set = new Set<string>();
+  const push = (phrase: string) =>
+    normalize(phrase).split(" ").forEach((w) => {
+      if (w.length > 3) set.add(w);
+    });
+  for (const e of FAQS) {
+    e.keywords.forEach(push);
+    e.phrases.forEach(push);
+  }
+  EMERGENCY_TERMS.forEach(push);
+  VOCAB = [...set];
+  return VOCAB;
+}
+
+/** Normalizes input and repairs small spelling mistakes against the FAQ vocabulary. */
+function correct(input: string): string {
+  const vocab = vocabulary();
+  return normalize(input)
+    .split(" ")
+    .map((word) => {
+      if (word.length < 4 || vocab.includes(word)) return word;
+      let best = word;
+      let bestDist = Infinity;
+      for (const term of vocab) {
+        if (Math.abs(term.length - word.length) > 2) continue;
+        const d = levenshtein(word, term);
+        if (d < bestDist) {
+          bestDist = d;
+          best = term;
+        }
+      }
+      const allowed = word.length > 7 ? 2 : 1;
+      return bestDist <= allowed ? best : word;
+    })
+    .join(" ");
+}
+
 export function isEmergency(input: string): boolean {
-  const text = normalize(input);
+  const text = correct(input);
   const words = text.split(" ");
   return EMERGENCY_TERMS.some((term) => {
     if (term.includes(" ")) {
@@ -178,7 +218,7 @@ const STOP_WORDS = new Set([
 ]);
 
 export function scoreFaq(entry: FaqEntry, input: string): number {
-  const text = normalize(input);
+  const text = correct(input);
   if (!text) return 0;
   const words = text.split(" ").filter((w) => !STOP_WORDS.has(w));
   let score = 0;
