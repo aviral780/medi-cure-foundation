@@ -160,7 +160,13 @@ export function isEmergency(input: string): boolean {
   const text = normalize(input);
   const words = text.split(" ");
   return EMERGENCY_TERMS.some((term) => {
-    if (term.includes(" ")) return text.includes(term);
+    if (term.includes(" ")) {
+      if (text.includes(term)) return true;
+      const parts = term.split(" ");
+      return words.some((_, i) =>
+        parts.every((part, k) => words[i + k] !== undefined && fuzzyEqual(words[i + k], part)),
+      );
+    }
     return words.some((w) => fuzzyEqual(w, term));
   });
 }
@@ -191,7 +197,7 @@ export function scoreFaq(entry: FaqEntry, input: string): number {
     }
     if (words.some((w) => w === k)) score += 2.5;
     else if (words.some((w) => w.length > 3 && (w.includes(k) || k.includes(w)))) score += 1.5;
-    else if (words.some((w) => fuzzyEqual(w, k))) score += 1.2;
+    else if (words.some((w) => fuzzyEqual(w, k))) score += 2.2;
   }
 
   return score;
