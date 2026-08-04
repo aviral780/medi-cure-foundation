@@ -134,6 +134,7 @@ function levenshtein(a: string, b: string): number {
   const n = b.length;
   if (!m || !n) return m || n;
   let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  let prevPrev: number[] = [];
   for (let i = 1; i <= m; i++) {
     const cur = [i];
     for (let j = 1; j <= n; j++) {
@@ -142,7 +143,12 @@ function levenshtein(a: string, b: string): number {
         cur[j - 1] + 1,
         prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
       );
+      // Damerau: treat an adjacent transposition (e.g. "pian" -> "pain") as one edit.
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        cur[j] = Math.min(cur[j], prevPrev[j - 2] + 1);
+      }
     }
+    prevPrev = prev;
     prev = cur;
   }
   return prev[n];
