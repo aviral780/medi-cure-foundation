@@ -41,6 +41,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { PrescriptionEditorDialog } from "@/components/prescriptions/PrescriptionEditorDialog";
 import { fetchPrescriptionByAppointment } from "@/lib/prescriptions-api";
+import { PatientMedicalDocuments } from "@/components/admin/PatientMedicalDocuments";
 import { GoogleMeetCard as MeetCard } from "@/components/appointments/GoogleMeetCard";
 
 type PatientRow = {
@@ -396,6 +397,13 @@ export function AppointmentDetailsDrawer({
                     </>
                   )}
                 </Section>
+
+                {/* Patient medical documents */}
+                {appointmentId && (
+                  <Section title="Patient Medical Documents">
+                    <PatientMedicalDocuments appointmentId={appointmentId} enabled={enabled} />
+                  </Section>
+                )}
 
                 {/* Payment */}
                 <Section title="Payment">

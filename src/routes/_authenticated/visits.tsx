@@ -20,6 +20,8 @@ import { GoogleMeetCard } from "@/components/appointments/GoogleMeetCard";
 import { cn } from "@/lib/utils";
 import { PrescriptionViewDialog } from "@/components/prescriptions/PrescriptionViewDialog";
 import { fetchPublishedPrescriptionAppointmentIds } from "@/lib/prescriptions-api";
+import { MedicalDocumentsCard } from "@/components/appointments/MedicalDocumentsCard";
+import { ClinicLocationCard, ImportantInformation } from "@/components/appointments/AppointmentInfoCards";
 
 export const Route = createFileRoute("/_authenticated/visits")({
   component: VisitsPage,
@@ -275,6 +277,15 @@ function VisitCard({
         >
           <FileText className="mr-1.5 h-4 w-4" aria-hidden /> View prescription
         </Button>
+      )}
+      {showActions && (
+        <>
+          <MedicalDocumentsCard className="mt-4" appointmentId={visit.id} />
+          {(visit.appointment_status ?? "").toLowerCase() === "confirmed" && (
+            <ClinicLocationCard className="mt-3" />
+          )}
+          <ImportantInformation className="mt-4" />
+        </>
       )}
       {showActions && (
         <div className="mt-4 space-y-2 border-t border-border/60 pt-3">
