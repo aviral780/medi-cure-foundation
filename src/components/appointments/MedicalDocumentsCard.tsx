@@ -94,15 +94,6 @@ export function MedicalDocumentsCard({
     }
   };
 
-  const downloadDoc = async (doc: MedicalDocument) => {
-    try {
-      const url = await getDocumentSignedUrl(doc, { download: true });
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      toast.error((err as Error).message);
-    }
-  };
-
   const uploading = progress !== null;
 
   return (
