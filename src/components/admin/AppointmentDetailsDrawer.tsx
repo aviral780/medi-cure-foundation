@@ -398,9 +398,15 @@ export function AppointmentDetailsDrawer({
                   )}
                 </Section>
 
+                {/* Patient medical documents */}
+                {appointmentId && (
+                  <Section title="Patient Medical Documents">
+                    <PatientMedicalDocuments appointmentId={appointmentId} enabled={enabled} />
+                  </Section>
+                )}
+
                 {/* Payment */}
                 <Section title="Payment">
-                  <></>
                   {payment ? (
                     <>
                       <InfoRow
