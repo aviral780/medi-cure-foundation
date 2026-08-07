@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Download, ExternalLink, FileText, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DocumentPreviewDialog } from "@/components/appointments/DocumentPreviewDialog";
+import { openExternal } from "@/lib/open-external";
 import {
   fetchMedicalDocuments,
   fileTypeLabel,
@@ -32,7 +33,7 @@ export function PatientMedicalDocuments({
     try {
       const url = await getDocumentSignedUrl(doc);
       if (isImageDoc(doc.file_type)) setPreview({ name: doc.file_name, url });
-      else window.open(url, "_blank", "noopener,noreferrer");
+      else openExternal(url);
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -41,7 +42,7 @@ export function PatientMedicalDocuments({
   const downloadDoc = async (doc: MedicalDocument) => {
     try {
       const url = await getDocumentSignedUrl(doc, { download: true });
-      window.open(url, "_blank", "noopener,noreferrer");
+      openExternal(url);
     } catch (err) {
       toast.error((err as Error).message);
     }

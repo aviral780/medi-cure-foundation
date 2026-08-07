@@ -13,13 +13,17 @@ export function DocumentPreviewDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl border-border/40 bg-background/95 backdrop-blur">
         <DialogHeader>
           <DialogTitle className="truncate text-base">{fileName}</DialogTitle>
         </DialogHeader>
-        <div className="max-h-[70vh] overflow-auto rounded-xl bg-muted/40 p-2">
+        <div className="max-h-[75vh] overflow-auto rounded-xl bg-foreground/90 p-2">
           {url ? (
-            <img src={url} alt={fileName} className="mx-auto max-h-[65vh] w-auto rounded-lg object-contain" />
+            <img
+              src={url}
+              alt={fileName}
+              className="mx-auto h-auto w-auto max-w-full rounded-lg object-contain"
+            />
           ) : (
             <div className="h-64 animate-pulse rounded-lg bg-muted" />
           )}

@@ -1,8 +1,10 @@
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { openExternal } from "@/lib/open-external";
 
-const CLINIC_MAPS_URL = "https://share.google/WENy84XRbhYZYJi4J";
+const CLINIC_MAPS_URL =
+  "https://www.google.com/maps/place/Vardhman+Medicare+Centre/@28.4834234,77.0152622,17z/data=!3m1!4b1!4m6!3m5!1s0x390d3dd3aaaaaaab:0xe0fbcdc2c6a82c97!8m2!3d28.4834187!4d77.0178371!16s%2Fg%2F1tjgm_01?entry=ttu";
 
 export function ClinicLocationCard({ className }: { className?: string }) {
   return (
@@ -14,10 +16,14 @@ export function ClinicLocationCard({ className }: { className?: string }) {
       <p className="mt-1 text-xs text-muted-foreground">
         Vardhman Medicare — get directions before your visit.
       </p>
-      <Button asChild variant="outline" size="sm" className="mt-3 h-10 w-full rounded-lg">
-        <a href={CLINIC_MAPS_URL} target="_blank" rel="noopener noreferrer">
-          <MapPin className="mr-1.5 h-4 w-4" aria-hidden /> Open in Google Maps
-        </a>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-3 h-10 w-full rounded-lg"
+        onClick={() => openExternal(CLINIC_MAPS_URL)}
+      >
+        <MapPin className="mr-1.5 h-4 w-4" aria-hidden /> Open in Google Maps
       </Button>
     </div>
   );

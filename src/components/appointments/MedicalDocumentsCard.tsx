@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { DocumentPreviewDialog } from "@/components/appointments/DocumentPreviewDialog";
+import { openExternal } from "@/lib/open-external";
 import {
   ACCEPT_ATTR,
   deleteMedicalDocument,
@@ -87,7 +88,7 @@ export function MedicalDocumentsCard({
       if (isImageDoc(doc.file_type)) {
         setPreview({ name: doc.file_name, url });
       } else {
-        window.open(url, "_blank", "noopener,noreferrer");
+        openExternal(url);
       }
     } catch (err) {
       toast.error((err as Error).message);
