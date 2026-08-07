@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { DocumentPreviewDialog } from "@/components/appointments/DocumentPreviewDialog";
-import { openExternal } from "@/lib/open-external";
+import { openExternalAsync } from "@/lib/open-external";
 import {
   ACCEPT_ATTR,
   deleteMedicalDocument,
@@ -83,13 +83,19 @@ export function MedicalDocumentsCard({
   };
 
   const openDoc = async (doc: MedicalDocument) => {
-    try {
-      const url = await getDocumentSignedUrl(doc);
-      if (isImageDoc(doc.file_type)) {
+    if (isImageDoc(doc.file_type)) {
+      setPreview({ name: doc.file_name, url: null });
+      try {
+        const url = await getDocumentSignedUrl(doc);
         setPreview({ name: doc.file_name, url });
-      } else {
-        openExternal(url);
+      } catch (err) {
+        setPreview(null);
+        toast.error((err as Error).message);
       }
+      return;
+    }
+    try {
+      await openExternalAsync(() => getDocumentSignedUrl(doc));
     } catch (err) {
       toast.error((err as Error).message);
     }

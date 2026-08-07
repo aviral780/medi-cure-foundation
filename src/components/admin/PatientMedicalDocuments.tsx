@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Download, ExternalLink, FileText, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DocumentPreviewDialog } from "@/components/appointments/DocumentPreviewDialog";
-import { openExternal } from "@/lib/open-external";
+import { openExternalAsync } from "@/lib/open-external";
 import {
   fetchMedicalDocuments,
   fileTypeLabel,
@@ -30,10 +30,19 @@ export function PatientMedicalDocuments({
   const docs = data ?? [];
 
   const openDoc = async (doc: MedicalDocument) => {
+    if (isImageDoc(doc.file_type)) {
+      setPreview({ name: doc.file_name, url: null });
+      try {
+        const url = await getDocumentSignedUrl(doc);
+        setPreview({ name: doc.file_name, url });
+      } catch (err) {
+        setPreview(null);
+        toast.error((err as Error).message);
+      }
+      return;
+    }
     try {
-      const url = await getDocumentSignedUrl(doc);
-      if (isImageDoc(doc.file_type)) setPreview({ name: doc.file_name, url });
-      else openExternal(url);
+      await openExternalAsync(() => getDocumentSignedUrl(doc));
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -41,8 +50,7 @@ export function PatientMedicalDocuments({
 
   const downloadDoc = async (doc: MedicalDocument) => {
     try {
-      const url = await getDocumentSignedUrl(doc, { download: true });
-      openExternal(url);
+      await openExternalAsync(() => getDocumentSignedUrl(doc, { download: true }));
     } catch (err) {
       toast.error((err as Error).message);
     }
