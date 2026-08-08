@@ -1,11 +1,10 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FileText, ImageIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
+import { Download, FileText, ImageIcon, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { DocumentPreviewDialog } from "@/components/appointments/DocumentPreviewDialog";
 import { openExternalAsync } from "@/lib/open-external";
 import {
   ACCEPT_ATTR,
@@ -33,7 +32,6 @@ export function MedicalDocumentsCard({
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
-  const [preview, setPreview] = useState<{ name: string; url: string | null } | null>(null);
 
   const queryKey = ["medical-documents", appointmentId];
   const { data, isLoading } = useQuery({
@@ -82,20 +80,9 @@ export function MedicalDocumentsCard({
     }
   };
 
-  const openDoc = async (doc: MedicalDocument) => {
-    if (isImageDoc(doc.file_type)) {
-      setPreview({ name: doc.file_name, url: null });
-      try {
-        const url = await getDocumentSignedUrl(doc);
-        setPreview({ name: doc.file_name, url });
-      } catch (err) {
-        setPreview(null);
-        toast.error((err as Error).message);
-      }
-      return;
-    }
+  const downloadDoc = async (doc: MedicalDocument) => {
     try {
-      await openExternalAsync(() => getDocumentSignedUrl(doc));
+      await openExternalAsync(() => getDocumentSignedUrl(doc, { download: true }));
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -186,40 +173,40 @@ export function MedicalDocumentsCard({
                   <FileText className="h-4 w-4" aria-hidden />
                 )}
               </span>
-              <button
-                type="button"
-                onClick={() => void openDoc(doc)}
-                className="min-w-0 flex-1 text-left"
-              >
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-medium text-foreground">{doc.file_name}</p>
                 <p className="text-[11px] text-muted-foreground">
                   {fileTypeLabel(doc.file_type)} · {humanFileSize(Number(doc.file_size))} ·{" "}
                   {new Date(doc.uploaded_at).toLocaleDateString()}
                 </p>
-              </button>
-              {canUpload && (
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                  aria-label={`Remove ${doc.file_name}`}
-                  disabled={removeMutation.isPending}
-                  onClick={() => removeMutation.mutate(doc)}
+                  className="h-8 w-8"
+                  aria-label={`Download ${doc.file_name}`}
+                  onClick={() => void downloadDoc(doc)}
                 >
-                  <Trash2 className="h-4 w-4" aria-hidden />
+                  <Download className="h-4 w-4" aria-hidden />
                 </Button>
-              )}
+                {canUpload && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                    aria-label={`Remove ${doc.file_name}`}
+                    disabled={removeMutation.isPending}
+                    onClick={() => removeMutation.mutate(doc)}
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                  </Button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
       )}
-
-      <DocumentPreviewDialog
-        fileName={preview?.name ?? ""}
-        url={preview?.url ?? null}
-        open={!!preview}
-        onOpenChange={(v) => !v && setPreview(null)}
-      />
     </div>
   );
 }
