@@ -1,27 +1,58 @@
-import { MapPin } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const CLINIC_NAME = "Vardhman Medicare Centre";
+const CLINIC_ADDRESS = "239, Sector 5, Gurugram (122001)";
 const CLINIC_MAPS_URL =
-  "https://www.google.com/maps/place/Vardhman+Medicare+Centre/@28.4834234,77.0152622,17z/data=!3m1!4b1!4m6!3m5!1s0x390d3dd3aaaaaaab:0xe0fbcdc2c6a82c97!8m2!3d28.4834187!4d77.0178371!16s%2Fg%2F1tjgm_01?entry=ttu";
+  "https://www.google.com/maps/search/?api=1&query=Vardhman+Medicare+Centre+Sector+56+Gurugram";
 
 export function ClinicLocationCard({ className }: { className?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(CLINIC_ADDRESS);
+      setCopied(true);
+      toast.success("Address copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy address");
+    }
+  };
+
   return (
     <div className={cn("rounded-2xl border border-border bg-card p-4", className)}>
       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <MapPin className="h-4 w-4 text-muted-foreground" aria-hidden />
         Clinic Location
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Vardhman Medicare — get directions before your visit.
-      </p>
-      {/* Native anchor: a real link click opens a new tab even where scripted
-          popups are blocked, and never touches the router or an iframe. */}
-      <Button asChild variant="outline" size="sm" className="mt-3 h-10 w-full rounded-lg">
-        <a href={CLINIC_MAPS_URL} target="_blank" rel="noopener noreferrer">
-          <MapPin className="mr-1.5 h-4 w-4" aria-hidden /> Open in Google Maps
-        </a>
-      </Button>
+      <div className="mt-2">
+        <p className="text-sm font-semibold text-foreground">{CLINIC_NAME}</p>
+        <p className="text-xs text-muted-foreground">{CLINIC_ADDRESS}</p>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-10 w-full rounded-lg"
+          onClick={copyAddress}
+        >
+          {copied ? (
+            <Check className="mr-1.5 h-4 w-4" aria-hidden />
+          ) : (
+            <Copy className="mr-1.5 h-4 w-4" aria-hidden />
+          )}
+          {copied ? "Copied" : "Copy Address"}
+        </Button>
+        <Button asChild variant="outline" size="sm" className="h-10 w-full rounded-lg">
+          <a href={CLINIC_MAPS_URL} target="_blank" rel="noopener noreferrer">
+            <MapPin className="mr-1.5 h-4 w-4" aria-hidden /> Get Directions
+          </a>
+        </Button>
+      </div>
     </div>
   );
 }
